@@ -14,8 +14,8 @@ extern void* Put(hashtable*, char*, void*);
 extern void* Put_bin(hashtable*, void*, int, void*);
 extern void* Get(hashtable*, char*);
 extern void* Get_bin(hashtable*, void*, int);
-extern void* Eliminar(hashtable*, char*);
+extern void* Eliminar_hash(hashtable*, char*);
 extern void* Eliminar_bin(hashtable*, void*, int);
-extern void Foreach(hashtable*, void (*f)(void*, void*), void* arg);
+extern void Foreach_hash(hashtable*, void (*f)(void*, void*), void* arg);
 
 #endif // !_TABLAHASH_H_
