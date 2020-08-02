@@ -6,9 +6,8 @@ int main(){
     int hola = 6;
     int hola2 = 2;
     Lista* l1 = Crear();
-    insertar(l1, (void*)&hola);
-    insertar(l1, (void*)&hola2);
-    //printf("%d", l1->cuenta);
+    insertar_final(l1, (void*)&hola);
+    insertar_final(l1, (void*)&hola2);
     imprimir(l1);
     imprimir_ant(l1);
     Destruir(l1);
@@ -63,6 +62,7 @@ void* insertar_final(Lista* lista, void* dato){
         }
         nuevo->dato = dato;
         cola->sig = nuevo;
+        nuevo->ant = cola;
         nuevo->sig = NULL;
         lista->cuenta++;
         return dato;
@@ -87,14 +87,25 @@ void* ultimo_elemento(Lista* lista){
     }
 }
 
-//Elimina un elemento en la lista, regresa 
+//Elimina un elemento en la lista.
 void* eliminar(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
     Nodo* tmp = lista->raiz, *prev = NULL;
     while(tmp != NULL){
         if(cmpfn(dato, tmp->dato) == 0){
             void* data = tmp->dato;
+            //Liberar la cabeza.
+            if(tmp->ant == NULL){
+                lista->raiz = tmp->sig;
+                free(tmp);
+            } else {
+                tmp->ant->sig = tmp->sig;
+                free(tmp);
+            }
+            lista->cuenta--;
+            return dato;
         }
     }
+    return NULL;   
 }
 
 void imprimir(Lista* lista){
