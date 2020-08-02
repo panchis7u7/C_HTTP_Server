@@ -12,19 +12,19 @@ typedef struct Nodo {
     void* dato;
 }Nodo;
 
-extern Lista* Crear(void);
+extern Lista* CrearLista(void);
 extern void* Destruir(Lista*);
-extern void* insertar(Lista*, void*);
-extern void* insertar_final(Lista*, void*);
-extern void* primer_elemeto(Lista*);
-extern void* ultimo_elemento(Lista*);
-extern void* encontrar(Lista*, void*, int(*cmpfn)(void*, void*));
-extern void* eliminar(Lista*, void*, int(*cmpfn)(void*, void*));
-extern void** obtener_arreglo(Lista*);
-extern void foreach(Lista*, void(*f)(void*, void*), void* arg);
-extern void liberar_arreglo_lista(void**);
-extern void imprimir(Lista*);
-extern void imprimir_ant(Lista*);
-extern int cuenta(Lista*);
+extern void* Insertar(Lista*, void*);
+extern void* Insertar_final(Lista*, void*);
+extern void* Primer_elemeto(Lista*);
+extern void* Ultimo_elemento(Lista*);
+extern void* Encontrar(Lista*, void*, int(*cmpfn)(void*, void*));
+extern void* Eliminar(Lista*, void*, int(*cmpfn)(void*, void*));
+extern void** Obtener_arreglo(Lista*);
+extern void Foreach(Lista*, void(*f)(void*, void*), void* arg);
+extern void Liberar_arreglo_lista(void**);
+extern void Imprimir(Lista*);
+extern void Imprimir_ant(Lista*);
+extern int Cuenta(Lista*);
 
 #endif //_LISTAENLAZADA_H_
