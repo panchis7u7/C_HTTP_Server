@@ -2,19 +2,6 @@
 #include <stdio.h>
 #include "ListaEnlazada.h"
 
-int main(){
-    int hola = 6;
-    int hola2 = 2;
-    Lista* l1 = Crear();
-    insertar_final(l1, (void*)&hola);
-    insertar_final(l1, (void*)&hola2);
-    imprimir(l1);
-    imprimir_ant(l1);
-    Destruir(l1);
-    //imprimir(l1);
-    return 0;
-}
-
 Lista* Crear(void){
     return calloc(1, sizeof(Lista));
 }
@@ -87,9 +74,25 @@ void* ultimo_elemento(Lista* lista){
     }
 }
 
+//Emcontrar un elemento en la lista.
+void* encontrar(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
+    Nodo* tmp = lista->raiz;
+    if(tmp == NULL)
+        return NULL;
+    while (tmp != NULL){
+        if(cmpfn(dato, tmp->dato)){
+            break;
+        }
+        tmp = tmp->sig;
+    }
+    if(tmp == NULL)
+        return NULL;
+    return tmp->dato;
+}
+
 //Elimina un elemento en la lista.
 void* eliminar(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
-    Nodo* tmp = lista->raiz, *prev = NULL;
+    Nodo* tmp = lista->raiz;
     while(tmp != NULL){
         if(cmpfn(dato, tmp->dato) == 0){
             void* data = tmp->dato;
@@ -107,6 +110,27 @@ void* eliminar(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
     }
     return NULL;   
 }
+
+//Regresa el numero de nodos en la lista.
+int cuenta(Lista* lista) {return lista->cuenta; }
+
+//Regresa un arreglo enbase a la informacion almacenada en la lista enlazada.
+void**obtener_arreglo(Lista* lista){
+    if(lista->raiz == NULL)
+        return NULL;
+    void** a = malloc(sizeof *a * lista->cuenta + 1);
+    Nodo* tmp;
+    int i = 0;
+    for (i = 0, tmp = lista->raiz; tmp != NULL; i++, tmp = tmp->sig)
+    {
+        a[i] = tmp->dato;
+    }
+    a[i] = NULL;
+    return a;
+}
+
+//Libera version estatica de la lista enlazada.
+void liberar_arreglo_lista(void** a){ free(a); }
 
 void imprimir(Lista* lista){
     Nodo* tmp = lista->raiz;
