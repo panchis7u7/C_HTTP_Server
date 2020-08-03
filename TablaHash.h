@@ -4,12 +4,13 @@
 typedef struct hashtable {
     int tamano;             //Solo lectura.
     int numero_entradas;    //Solo lectura.
-    float carga;            //Solo lectura.
+    float carga;            //Solo lectura. ->Numero de llaves almacenadas en la tabla, dividida por la capacidad.
     struct Lista** cubeta; 
     int (*hashf)(void* dato, int tamano_dato, int cuenta_cubeta);
 }hashtable;
 
 extern hashtable* CrearHash(int, int (*hashf)(void*, int, int));
+extern void DestruirHash(hashtable*);
 extern void* Put(hashtable*, char*, void*);
 extern void* Put_bin(hashtable*, void*, int, void*);
 extern void* Get(hashtable*, char*);

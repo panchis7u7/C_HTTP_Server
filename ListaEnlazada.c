@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include "ListaEnlazada.h"
 
-Lista* Crear(void){
+Lista* CrearLista(void){
     return calloc(1, sizeof(Lista));
 }
 
-void* Destruir(Lista* lista){
+void* DestruirLista(Lista* lista){
     Nodo* tmp = lista->raiz, *sig; 
     while(tmp != NULL){
         sig = tmp->sig;
@@ -114,8 +114,18 @@ void* eliminar(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
 //Regresa el numero de nodos en la lista.
 int cuenta(Lista* lista) {return lista->cuenta; }
 
+//Para cada item/nodo de la lista, corre una funcion.
+void Foreach_lista(Lista* lista, void (*f)(void*, void*), void* arg){
+    Nodo* tmp = lista->raiz, *siguiente;
+    while(tmp != NULL){
+        siguiente = tmp->sig;
+        f(tmp->dato, arg);
+        tmp = siguiente;
+    }
+}
+
 //Regresa un arreglo enbase a la informacion almacenada en la lista enlazada.
-void**obtener_arreglo(Lista* lista){
+void** obtener_arreglo(Lista* lista){
     if(lista->raiz == NULL)
         return NULL;
     void** a = malloc(sizeof *a * lista->cuenta + 1);
