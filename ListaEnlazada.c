@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include "ListaEnlazada.h"
 
-Lista* CrearLista(void){
+Lista* Crear_lista(void){
     return calloc(1, sizeof(Lista));
 }
 
-void* DestruirLista(Lista* lista){
+void* Destruir_lista(Lista* lista){
     Nodo* tmp = lista->raiz, *sig; 
     while(tmp != NULL){
         sig = tmp->sig;
@@ -17,7 +17,7 @@ void* DestruirLista(Lista* lista){
 }
 
 //insertar un nodo al principio de la lista.
-void* insertar(Lista* lista, void* dato){
+void* Insertar_lista(Lista* lista, void* dato){
     Nodo* nuevo = calloc(1, sizeof(Nodo));
     if(nuevo != NULL) {
         nuevo->dato = dato;
@@ -38,7 +38,7 @@ void* insertar(Lista* lista, void* dato){
 }
 
 //insertar un nodo al final de la lista.
-void* insertar_final(Lista* lista, void* dato){
+void* Insertar_final_lista(Lista* lista, void* dato){
     Nodo* cola = lista->raiz;
     if(lista->raiz == NULL)
         return insertar(lista, dato);
@@ -57,14 +57,14 @@ void* insertar_final(Lista* lista, void* dato){
 }
 
 //regresa el primer elemento de la lista.
-void* primer_elemeto(Lista* lista){
+void* Primer_elemeto_lista(Lista* lista){
     if(lista->raiz == NULL)
     return NULL;
     return lista->raiz->dato;
 }
 
 //regresa el ultimo elemento de una lista.
-void* ultimo_elemento(Lista* lista){
+void* Ultimo_elemento_lista(Lista* lista){
     Nodo* tmp = lista->raiz;
     if(tmp != NULL){
         while(tmp->sig != NULL){
@@ -75,7 +75,7 @@ void* ultimo_elemento(Lista* lista){
 }
 
 //Emcontrar un elemento en la lista.
-void* encontrar(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
+void* Encontrar_lista(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
     Nodo* tmp = lista->raiz;
     if(tmp == NULL)
         return NULL;
@@ -91,7 +91,7 @@ void* encontrar(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
 }
 
 //Elimina un elemento en la lista.
-void* eliminar(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
+void* Eliminar_lista(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
     Nodo* tmp = lista->raiz;
     while(tmp != NULL){
         if(cmpfn(dato, tmp->dato) == 0){
@@ -112,7 +112,7 @@ void* eliminar(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
 }
 
 //Regresa el numero de nodos en la lista.
-int cuenta(Lista* lista) {return lista->cuenta; }
+int Cuenta_lista(Lista* lista) {return lista->cuenta; }
 
 //Para cada item/nodo de la lista, corre una funcion.
 void Foreach_lista(Lista* lista, void (*f)(void*, void*), void* arg){
@@ -125,7 +125,7 @@ void Foreach_lista(Lista* lista, void (*f)(void*, void*), void* arg){
 }
 
 //Regresa un arreglo enbase a la informacion almacenada en la lista enlazada.
-void** obtener_arreglo(Lista* lista){
+void** Obtener_arreglo_lista(Lista* lista){
     if(lista->raiz == NULL)
         return NULL;
     void** a = malloc(sizeof *a * lista->cuenta + 1);
@@ -140,12 +140,13 @@ void** obtener_arreglo(Lista* lista){
 }
 
 //Libera version estatica de la lista enlazada.
-void liberar_arreglo_lista(void** a){ free(a); }
+void Liberar_arreglo_lista(void** a){ free(a); }
 
-void imprimir(Lista* lista){
+void Imprimir_sig_lista(Lista* lista){
     Nodo* tmp = lista->raiz;
     printf("|-");
     while(tmp->sig != NULL){
+
         printf("|%d|-", *((int*)tmp->dato));
         tmp = tmp->sig;
     }
@@ -153,7 +154,7 @@ void imprimir(Lista* lista){
     printf(">\n");
 }
 
-void imprimir_ant(Lista* lista){
+void Imprimir_ant_lista(Lista* lista){
 	Nodo* le = lista->raiz;
 	printf("<-");
 	while(le->sig != NULL){
