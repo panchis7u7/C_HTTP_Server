@@ -7,8 +7,12 @@
 #define TAMANO_DEFAULT 128
 #define FACTOR_CRECIMIENTO_DEFAULT 2
 
-int htcmp(void*, void*);    //Prototipo.
-void Anadir_cuenta_entrada(hashtable*, int);    //Prototipo.
+//Prototipos de Funcion.
+int htcmp(void*, void*);
+void Anadir_cuenta_entrada(hashtable*, int);
+void Foreach_callback(void*, void*);
+void liberar_htent(void*, void*);
+int hashfn_predeterminada(void*, int, int);
 
 //Entrada de una tabla hash.
 struct htent {
