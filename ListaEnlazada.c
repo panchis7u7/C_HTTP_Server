@@ -2,10 +2,12 @@
 #include <stdio.h>
 #include "ListaEnlazada.h"
 
+//Crea una nueva lista.
 Lista* Crear_lista(void){
     return calloc(1, sizeof(Lista));
 }
 
+//Destruye una lista.
 void* Destruir_lista(Lista* lista){
     Nodo* tmp = lista->raiz, *sig; 
     while(tmp != NULL){
@@ -74,7 +76,7 @@ void* Ultimo_elemento_lista(Lista* lista){
     }
 }
 
-//Emcontrar un elemento en la lista.
+//Emcontrar un elemento en la lista, int (*cmpfn)(void*, void*) es un apuntador a una funcion.
 void* Encontrar_lista(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
     Nodo* tmp = lista->raiz;
     if(tmp == NULL)
@@ -124,7 +126,7 @@ void Foreach_lista(Lista* lista, void (*f)(void*, void*), void* arg){
     }
 }
 
-//Regresa un arreglo enbase a la informacion almacenada en la lista enlazada.
+//Regresa un arreglo en base a la informacion almacenada en la lista enlazada.
 void** Obtener_arreglo_lista(Lista* lista){
     if(lista->raiz == NULL)
         return NULL;
