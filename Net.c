@@ -34,10 +34,10 @@ int Get_listener_socket(char* puerto){
     int true = 1;
     int rv;
 
-//Este bloque mira a las interfaces de area local e
-//intenta encontrar algunas que concuerden con nuestros requerimientos
-//ya sea IPV4 o IPV6 (AF_UNSPEC) y TCP (SOCK_STREAM) y usar cualquier IP en
-//esta maquina (AI_PASSIVE).
+    //Este bloque mira a las interfaces de area local e
+    //intenta encontrar algunas que concuerden con nuestros requerimientos
+    //ya sea IPV4 o IPV6 (AF_UNSPEC) y TCP (SOCK_STREAM) y usar cualquier IP en
+    //esta maquina (AI_PASSIVE).
 
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
@@ -87,7 +87,7 @@ int Get_listener_socket(char* puerto){
         return -3;
     }
 
-    //Empieza a escuchar. esto es lo que permitira a computadoras remotas
+    //Empieza a escuchar. Esto es lo que permitira a computadoras remotas
     //conectarse a este socket/IP.
     if(listen(sockfd, BACKLOG) == -1){
         close(sockfd);
