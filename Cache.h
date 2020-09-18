@@ -17,11 +17,11 @@ typedef struct cache {
     int tamano_actual;
 }cache;
 
-extern entrada_cache* Asignar_entrada(char* ruta, char* tipo_contenido, void* contenido, int tamano_contenido);
-extern entrada_cache* Get_cache(cache* cache, char* ruta);
-extern cache* Crear_cache(int tamano_maximo, int tamano_hash);
-extern void Liberar_entrada(entrada_cache* entrada);
-extern void Put_cache(cache* cache, char* ruta, char* tipo_contenido, void* contenido, int tamano_contenido);
-extern void Liberar_cache(cache* cache);
+extern entrada_cache* asignar_entrada(char* ruta, char* tipo_contenido, void* contenido, int tamano_contenido);
+extern entrada_cache* get_cache(cache* cache, char* ruta);
+extern cache* crear_cache(int tamano_maximo, int tamano_hash);
+extern void liberar_entrada(entrada_cache* entrada);
+extern void put_cache(cache* cache, char* ruta, char* tipo_contenido, void* contenido, int tamano_contenido);
+extern void liberar_cache(cache* cache);
 
 #endif  //!_CACHE_H_

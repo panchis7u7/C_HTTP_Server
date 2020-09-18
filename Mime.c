@@ -5,10 +5,10 @@
 #define TIPO_MIME_PREDETERMINADO "application/octet-stream"
 
 //Prototipo de funciones.
-char* String_minusculas(char*);
+char* string_minusculas(char*);
 
 //Convierte a minusculas toda una cadena de caracteres.
-char* String_minusculas(char* s){
+char* string_minusculas(char* s){
     char* p;
     for (p = s; *p != '\0'; p++)
     {
@@ -18,14 +18,14 @@ char* String_minusculas(char* s){
 }
 
 //Regresa un tipo MIME para un nombre de archivo dado.
-char *mime_type_get(char *filename) {
+char *obtener_tipo_mime(char *filename) {
   char *ext = strrchr(filename, '.');
 
   if (ext == NULL) {
     return TIPO_MIME_PREDETERMINADO;
   }
   ext++;
-  String_minusculas(ext);
+  string_minusculas(ext);
   // Esto es O(n) y deberia de ser O(1).
 
   if (strcmp(ext, "html") == 0 || strcmp(ext, "htm") == 0) {

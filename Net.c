@@ -12,7 +12,7 @@
 #define BACKLOG 10  //Numero de conecciones pendientes que la cola almacenara.
 
 //Esto obtiene una direccion de internet, ya sea IPV4 o IPV6.
-char* Get_in_addr(const struct sockaddr* sa, char* s, size_t longitud_maxima){
+char* get_in_addr(const struct sockaddr* sa, char* s, size_t longitud_maxima){
     switch(sa->sa_family){
         case AF_INET:
             inet_ntop(AF_INET, &(((struct sockaddr_in*)sa)->sin_addr), s, longitud_maxima);
@@ -28,7 +28,7 @@ char* Get_in_addr(const struct sockaddr* sa, char* s, size_t longitud_maxima){
 }
 
 //Regresar el socket oyente (listening) principal.
-int Get_listener_socket(char* puerto){
+int obtener_socket_oyente(char* puerto){
     int sockfd; 
     struct addrinfo hints, *servinfo, *p;
     int true = 1;

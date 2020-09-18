@@ -4,7 +4,7 @@
 #include <sys/stat.h>   //Nos permite obtener informacion sobre atributos de archivos.
 
 //Carga un archivo en memoria y regresa un apuntador a los datos, el buffer no esta terminado en nulo.
-file_data* Cargar_archivo(char* nombre_archivo){
+file_data* cargar_archivo(char* nombre_archivo){
     char* buffer, *p;
     struct stat buf;
     int bytes_leidos, bytes_restantes, bytes_totales = 0;
@@ -54,7 +54,7 @@ file_data* Cargar_archivo(char* nombre_archivo){
 }
 
 //Liberar memoria reservada por Cargar_archivo().
-void Liberar_archivo(file_data* datos_archivo){
+void liberar_archivo(file_data* datos_archivo){
     free(datos_archivo->data);
     free(datos_archivo);
 }

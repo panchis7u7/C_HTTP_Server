@@ -9,8 +9,8 @@
 
 //Prototipos de Funcion.
 int htcmp(void*, void*);
-void Anadir_cuenta_entrada(hashtable*, int);
-void Foreach_callback(void*, void*);
+void anadir_cuenta_entrada(hashtable*, int);
+void foreach_callback(void*, void*);
 void liberar_htent(void*, void*);
 int hashfn_predeterminada(void*, int, int);
 
@@ -29,7 +29,7 @@ typedef struct carga_foreach_lista {
 }carga_foreach_lista;
 
 //Cambia la cuenta de entrada y mantener las metricas de cargas.
-void Anadir_cuenta_entrada(hashtable* ht, int d){
+void anadir_cuenta_entrada(hashtable* ht, int d){
     ht->numero_entradas += d;
     ht->carga = (float)ht->numero_entradas / ht->tamano;
 }
@@ -47,7 +47,7 @@ int hashfn_predeterminada(void* dato, int tamano_dato, int conteo_cubeta){
     return h;
 }
 
-hashtable* Crear_hash(int tamano, int (*hashfn)(void*, int, int)){
+hashtable* crear_hash(int tamano, int (*hashfn)(void*, int, int)){
     if(tamano < 1){
         tamano = TAMANO_DEFAULT;
     }
@@ -68,7 +68,7 @@ hashtable* Crear_hash(int tamano, int (*hashfn)(void*, int, int)){
 
     int i;
     for(i = 0; i < tamano; i++){
-        ht->cubeta[i] = CrearLista();
+        ht->cubeta[i] = crear_lista();
     }
     return ht;
 }
@@ -80,23 +80,23 @@ void liberar_htent(void* htent, void* arg){
 }
 
 //Destruir tabla hash.
-void Destruir_hash(hashtable* ht){
+void destruir_hash(hashtable* ht){
     int i;
     for(i = 0; i < ht->tamano; i++){
         Lista*  lista = ht->cubeta[i];
-        Foreach_lista(lista, liberar_htent, NULL);
-        DestruirLista(lista);
+        foreach_lista(lista, liberar_htent, NULL);
+        destruir_lista(lista);
     }
     free(ht);
 }
 
 //Insertar en la tabla hash con una llave tipo cadena (string).
-void* Put_hash(hashtable* ht, char* llave, void* dato){
-    return Put_hash_bin(ht, llave, strlen(llave), dato);
+void* put_hash(hashtable* ht, char* llave, void* dato){
+    return put_hash_bin(ht, llave, strlen(llave), dato);
 }
 
 //Insertar en la tabla hash con una llave binaria.
-void* Put_hash_bin(hashtable* ht, void* llave, int tamano_llave, void* dato){
+void* put_hash_bin(hashtable* ht, void* llave, int tamano_llave, void* dato){
     int indice = ht->hashf(llave, tamano_llave, ht->tamano);
     Lista* lista = ht->cubeta[indice];
     struct htent* ent = malloc(sizeof *ent);
@@ -105,27 +105,27 @@ void* Put_hash_bin(hashtable* ht, void* llave, int tamano_llave, void* dato){
     ent->tamano_llave = tamano_llave;
     ent->llave_hash = indice;
     ent->dato = dato;
-    if(Insertar_final(lista, ent) == NULL){
+    if(insertar_final_lista(lista, ent) == NULL){
         free(ent->llave);
         free(ent);
     }
-    Anadir_cuenta_entrada(ht, +1);
+    anadir_cuenta_entrada(ht, +1);
     return dato;
 }
 
 //Obtener valor de la tabla hash con una llave tipo cadena (string).
-void* Get_hash(hashtable* ht, char* llave){
-    return Get_hash_bin(ht, llave, strlen(llave));
+void* get_hash(hashtable* ht, char* llave){
+    return get_hash_bin(ht, llave, strlen(llave));
 }
 
 //Obtener valor de la tabla hash con una llave binaria.
-void* Get_hash_bin(hashtable* ht, void* llave, int tamano_llave){
+void* get_hash_bin(hashtable* ht, void* llave, int tamano_llave){
     int indice = ht->hashf(llave, tamano_llave, ht->tamano);
     Lista* lista = ht->cubeta[indice];
     struct htent cmpent;
     cmpent.llave = llave;
     cmpent.tamano_llave = tamano_llave;
-    struct htent *tmp = Encontrar_lista(lista, &cmpent, htcmp);
+    struct htent *tmp = encontrar_lista(lista, &cmpent, htcmp);
     if(tmp == NULL)
         return NULL;
     return tmp->dato;
@@ -141,35 +141,35 @@ int htcmp(void* a, void* b){
 }
 
 //Borrar valor de la tabla hash con una llave tipo cadena (string).
-void* Eliminar_hash(hashtable* ht, char* llave){
-    return Eliminar_hash_bin(ht, llave, strlen(llave));
+void* eliminar_hash(hashtable* ht, char* llave){
+    return eliminar_hash_bin(ht, llave, strlen(llave));
 }
 
 //Borrar valor de la tabla hash con una llave Binaria.
-void* Eliminar_hash_bin(hashtable* ht, void* llave, int tamano_llave){
+void* eliminar_hash_bin(hashtable* ht, void* llave, int tamano_llave){
     int indice = ht->hashf(llave, tamano_llave, ht->tamano);
     Lista* lista = ht->cubeta[indice];
     struct htent cmpent;
     cmpent.llave = llave;
     cmpent.tamano_llave = tamano_llave;
-    struct htent* ent = Eliminar_lista(lista, &cmpent, htcmp);
+    struct htent* ent = eliminar_lista(lista, &cmpent, htcmp);
     if(ent == NULL)
         return NULL;    
     void* dato = ent->dato;
     free(ent);
-    Anadir_cuenta_entrada(ht, -1);
+    anadir_cuenta_entrada(ht, -1);
     return dato;
 }
 
 //Funcion de llamada de vuelta (callback) para cada elemento (Foreach).
-void Foreach_callback(void* vent, void* v_carga_util){
+void foreach_callback(void* vent, void* v_carga_util){
     struct htent* ent = vent;
     struct carga_foreach_lista* carga_util = v_carga_util;
     carga_util->f(ent->dato, carga_util->arg);
 }
 
 //Para cada elemento en la tabla hash.
-void Foreach_hash(hashtable* ht, void(*f)(void*, void*), void* arg){
+void foreach_hash(hashtable* ht, void(*f)(void*, void*), void* arg){
     carga_foreach_lista carga_util;
     carga_util.f = f;
     carga_util.arg = arg;
@@ -177,7 +177,7 @@ void Foreach_hash(hashtable* ht, void(*f)(void*, void*), void* arg){
     for (i = 0; i < ht->tamano; i++)
     {
         Lista* lista = ht->cubeta[i];    
-        Foreach_lista(lista, Foreach_callback, &carga_util);
+        foreach_lista(lista, foreach_callback, &carga_util);
     }
     
 }

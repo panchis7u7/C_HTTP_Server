@@ -6,7 +6,7 @@ typedef struct file_data{
     int tamano;
 }file_data;
 
-extern file_data* Cargar_archivo(char* nombre_archivo);
-extern void Liberar_archivo(file_data* datos_archivo);
+extern file_data* cargar_archivo(char* nombre_archivo);
+extern void liberar_archivo(file_data* datos_archivo);
 
 #endif //!_FILE_H_
