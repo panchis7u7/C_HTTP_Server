@@ -8,12 +8,11 @@ typedef struct Lista {
 
 typedef struct Nodo {
     struct Nodo* sig;
-    struct Nodo* ant;
     void* dato;
 }Nodo;
 
 extern Lista* crear_lista(void);
-extern void* destruir_lista(Lista* lista);
+extern void destruir_lista(Lista* lista);
 extern void* insertar_lista(Lista* lista, void* dato);
 extern void* insertar_final_lista(Lista* lista, void* dato);
 extern void* primer_elemeto_lista(Lista* lista);

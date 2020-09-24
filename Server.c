@@ -18,8 +18,8 @@
 #include <time.h>
 #include <unistd.h>
 
-#define PUERTO "6969"
-#define ARCHIVOS_SERVIDOR "/.serverfiles"
+#define PUERTO "3490"
+#define ARCHIVOS_SERVIDOR "./serverfiles"
 #define ROOT_SERVIDOR "./serveroot"
 
 //Prototipo de funciones.
@@ -29,7 +29,8 @@ void get_d20(int);
 void get_fecha(int);
 void post_guardado(int, char*);
 int obtener_archivo_o_cache(int, cache*, char*);
-void obtener_archivo(int, cache*, char*);
+void obtener_archivo(int, char*);
+ void handle_solicitud_http(int,  cache* cache);
 
 /**
  * Send an HTTP response
@@ -50,16 +51,16 @@ int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, i
 
     int tamano_respuesta = sprintf(respuesta, 
                                     "%s\n"
-                                    "Fecha: %s"
-                                    "Conexion: cerrada\n"
-                                    "Tamano-contenido: %d\n"
-                                    "Tipo_contenido: %s\n"
+                                    "Date: %s"
+                                    "Connection: close\n"
+                                    "Content-Length: %d\n"
+                                    "Content-Type: %s\n"
                                     "\n",
                                     cabeza, asctime(info), tamano_contenido, tipo_contenido);
     memcpy(respuesta + tamano_respuesta, cuerpo, tamano_contenido);
     //Mandalo todo!.
-    int rv;
-    if(rv = send(fd, respuesta, tamano_respuesta + tamano_contenido, 0) < 0){
+    int rv = send(fd, respuesta, tamano_respuesta + tamano_contenido, 0);
+    if(rv < 0){
         perror("send");
     }
     return rv;
@@ -143,7 +144,7 @@ void get_d20(int fd){
      return 0;
  }
 
- void obtener_archivo(int fd, cache* cache, char* ruta_solicitud){
+ void obtener_archivo(int fd, char* ruta_solicitud){
      char ruta_archivo[65536];
      file_data* datos_archivo;
      char* tipo_mime;
@@ -179,7 +180,7 @@ void get_d20(int fd){
  }
 
  //Encargarse de la solicitud HTTP y mandar respuesta.
- void handle_solicitud_http(int fd, struct cache* cache){
+ void handle_solicitud_http(int fd, cache* cache){
      const int tamano_buffer_solicitud = 65536;
      char solicitud[tamano_buffer_solicitud];
      char* p;
@@ -210,7 +211,7 @@ void get_d20(int fd){
          if (strcmp(ruta_solicitud, "/d20") == 0){
              get_d20(fd);
          } else  {
-             obtener_archivo(fd, cache, ruta_solicitud);
+             obtener_archivo_o_cache(fd, cache, ruta_solicitud);
          }
      } else if (strcmp(tipo_solicitud, "POST") == 0) {
         if (strcmp(ruta_solicitud, "/save") == 0) {

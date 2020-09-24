@@ -8,7 +8,7 @@ Lista* crear_lista(void){
 }
 
 //Destruye una lista.
-void* destruir_lista(Lista* lista){
+void destruir_lista(Lista* lista){
     Nodo* tmp = lista->raiz, *sig; 
     while(tmp != NULL){
         sig = tmp->sig;
@@ -20,23 +20,16 @@ void* destruir_lista(Lista* lista){
 
 //insertar un nodo al principio de la lista.
 void* insertar_lista(Lista* lista, void* dato){
-    Nodo* nuevo = calloc(1, sizeof(Nodo));
-    if(nuevo != NULL) {
-        nuevo->dato = dato;
-        if(lista->raiz == NULL){
-            lista->raiz = nuevo;
-            nuevo->sig = NULL;
-            nuevo->ant = NULL;
-            return dato;
-        } else {
-            nuevo->sig = lista->raiz;
-            lista->raiz->ant = nuevo;
-            nuevo->ant = NULL;
-            lista->raiz = nuevo;
-            return dato;
-        }
+    Nodo* nuevo = calloc(1,sizeof(Nodo));
+    if(nuevo == NULL){
+        return NULL;
     }
-    return NULL;
+    nuevo->dato = dato;
+    nuevo->sig = lista->raiz;
+    lista->raiz = nuevo;
+
+    lista->cuenta++;
+    return dato;
 }
 
 //insertar un nodo al final de la lista.
@@ -45,17 +38,19 @@ void* insertar_final_lista(Lista* lista, void* dato){
     if(lista->raiz == NULL)
         return insertar_lista(lista, dato);
     Nodo* nuevo = calloc(1, sizeof(Nodo));
-    if(nuevo != NULL){
-        while(cola->sig != NULL){
-            cola = cola->sig;
-        }
-        nuevo->dato = dato;
-        cola->sig = nuevo;
-        nuevo->ant = cola;
-        nuevo->sig = NULL;
-        lista->cuenta++;
-        return dato;
+    if(nuevo == NULL){
+        return NULL;
     }
+    
+    while(cola->sig != NULL){
+        cola = cola->sig;
+    }
+
+    nuevo->dato = dato;
+    cola->sig = nuevo;
+    nuevo->sig = NULL;
+    lista->cuenta++;
+    return dato;
 }
 
 //regresa el primer elemento de la lista.
@@ -68,12 +63,14 @@ void* primer_elemeto_lista(Lista* lista){
 //regresa el ultimo elemento de una lista.
 void* ultimo_elemento_lista(Lista* lista){
     Nodo* tmp = lista->raiz;
-    if(tmp != NULL){
-        while(tmp->sig != NULL){
-            tmp = tmp->sig;
-        }
-        return tmp->dato;
+    if(tmp == NULL){
+        return NULL;
     }
+    
+    while(tmp->sig != NULL){
+        tmp = tmp->sig;
+    }
+    return tmp->dato;
 }
 
 //Emcontrar un elemento en la lista, int (*cmpfn)(void*, void*) es un apuntador a una funcion.
@@ -94,21 +91,23 @@ void* encontrar_lista(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
 
 //Elimina un elemento en la lista.
 void* eliminar_lista(Lista* lista, void* dato, int (*cmpfn)(void*, void*)){
-    Nodo* tmp = lista->raiz;
+    Nodo* tmp = lista->raiz, *prev = NULL;
     while(tmp != NULL){
         if(cmpfn(dato, tmp->dato) == 0){
             void* data = tmp->dato;
             //Liberar la cabeza.
-            if(tmp->ant == NULL){
+            if(prev == NULL){
                 lista->raiz = tmp->sig;
                 free(tmp);
             } else {
-                tmp->ant->sig = tmp->sig;
+               prev->sig = tmp->sig;
                 free(tmp);
             }
             lista->cuenta--;
-            return dato;
+            return data;
         }
+        prev = tmp;
+        tmp = tmp->sig;
     }
     return NULL;   
 }
@@ -154,17 +153,4 @@ void imprimir_sig_lista(Lista* lista){
     }
     printf("|%d|-", *((int*)tmp->dato));
     printf(">\n");
-}
-
-void imprimir_ant_lista(Lista* lista){
-	Nodo* le = lista->raiz;
-	printf("<-");
-	while(le->sig != NULL){
-		le= le->sig;
-	}
-	while(le != NULL){
-		printf("|%d|-", *((int*)le->dato));
-		le = le->ant;
-	}
-	printf("|\n");
 }
