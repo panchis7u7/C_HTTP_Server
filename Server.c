@@ -20,7 +20,7 @@
 
 #define PUERTO "3490"
 #define ARCHIVOS_SERVIDOR "./serverfiles"
-#define ROOT_SERVIDOR "./serveroot"
+#define ROOT_SERVIDOR "./serverroot"
 
 //Prototipo de funciones.
 int enviar_respuesta(int, char*, char*, void*, int);
@@ -30,7 +30,7 @@ void get_fecha(int);
 void post_guardado(int, char*);
 int obtener_archivo_o_cache(int, cache*, char*);
 void obtener_archivo(int, char*);
- void handle_solicitud_http(int,  cache* cache);
+ void handle_solicitud_http(int, cache*);
 
 /**
  * Send an HTTP response
@@ -211,7 +211,7 @@ void get_d20(int fd){
          if (strcmp(ruta_solicitud, "/d20") == 0){
              get_d20(fd);
          } else  {
-             obtener_archivo_o_cache(fd, cache, ruta_solicitud);
+             obtener_archivo(fd, ruta_solicitud);
          }
      } else if (strcmp(tipo_solicitud, "POST") == 0) {
         if (strcmp(ruta_solicitud, "/save") == 0) {
@@ -225,12 +225,14 @@ void get_d20(int fd){
     }    
  }
 
+char* get_in_addr(const struct sockaddr* sa, char* s, size_t longitud_maxima);
+
  int main(void){
      int newfd; //Escucha en sock_fd, nueva coneccion en newfd.
      struct sockaddr_storage info_addr;
      char s[INET6_ADDRSTRLEN];
 
-     struct cache* cache = crear_cache(10, 0);
+    struct cache* cache = crear_cache(10, 0);
 
      //Obtener un socket oyente.
      int listenfd = obtener_socket_oyente(PUERTO);
