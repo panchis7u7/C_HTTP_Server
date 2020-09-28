@@ -28,9 +28,9 @@ void resp_404(int);
 void get_d20(int);
 void get_fecha(int);
 void post_guardado(int, char*);
-int obtener_archivo_o_cache(int, cache*, char*);
-void obtener_archivo(int, char*);
- void handle_solicitud_http(int, cache*);
+//int obtener_archivo_o_cache(int, cache*, char*);
+int obtener_archivo(int, cache*, char*);
+void handle_solicitud_http(int, cache*);
 
 /**
  * Send an HTTP response
@@ -122,48 +122,43 @@ void get_d20(int fd){
     //Guardar el cuerpo y enviar respuesta.
  }
 
- int obtener_archivo_o_cache(int fd, cache* cache, char* ruta_archivo){
-     file_data* datos_archivo;
-     entrada_cache* cacheent;
-     char* tipo_mime;
-
-     cacheent = get_cache(cache, ruta_archivo);
-
-     if(cacheent != NULL){
-         enviar_respuesta(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido);
-     } else {
-         datos_archivo = cargar_archivo(ruta_archivo);
-         if(ruta_archivo == NULL) {
+int obtener_archivo(int fd, cache* cache, char* ruta_archivo){
+    char* tipo_mime; 
+    file_data* datos_archivo;
+    entrada_cache* cacheent;
+    //Checar si archivo esta en cache.
+    cacheent = get_cache(cache, ruta_archivo);
+    if(cacheent != NULL){
+        enviar_respuesta(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido);
+        return 1;
+    } else {
+        char ruta_abs[65536];
+        //Si no encontro el archivo, intenta encontrar el archivo y abrirlo.
+        snprintf(ruta_abs, sizeof(ruta_abs), "%s%s", ROOT_SERVIDOR, ruta_archivo);
+        datos_archivo = cargar_archivo(ruta_abs);
+        if(datos_archivo == NULL){
+            snprintf(ruta_abs, sizeof(ruta_abs), "%s%s/index.html", ROOT_SERVIDOR, ruta_archivo);
+            datos_archivo = cargar_archivo(ruta_abs);
+            if(datos_archivo == NULL){
+                resp_404(fd);
                 return -1;
-         }
-         tipo_mime = obtener_tipo_mime(ruta_archivo);
-         enviar_respuesta(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano);
-         put_cache(cache, ruta_archivo, tipo_mime, datos_archivo->data, datos_archivo->tamano);
-         liberar_archivo(datos_archivo);
-     }
-     return 0;
- }
-
- void obtener_archivo(int fd, char* ruta_solicitud){
-     char ruta_archivo[65536];
-     file_data* datos_archivo;
-     char* tipo_mime;
-
-     //Tratar de encontrar el archivo.
-     snprintf(ruta_archivo, sizeof(ruta_archivo), "%s%s", ROOT_SERVIDOR, ruta_solicitud);
-     datos_archivo = cargar_archivo(ruta_archivo);
-     if(datos_archivo == NULL){
-         snprintf(ruta_archivo, sizeof(ruta_archivo), "%s%s/index.html", ROOT_SERVIDOR, ruta_solicitud);
-         datos_archivo = cargar_archivo(ruta_archivo);
-         if(datos_archivo == NULL){
-             resp_404(fd);
-             return;
-         }
-     }
-     tipo_mime = obtener_tipo_mime(ruta_archivo);
-     enviar_respuesta(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano);
-     liberar_archivo(datos_archivo);
- }
+            }
+            //Si se encontro el archivo: manda la respueta y guarda en el cache.
+        tipo_mime = obtener_tipo_mime(ruta_abs);
+        enviar_respuesta(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano);
+        liberar_archivo(datos_archivo);
+        return 1;
+        }
+        //Si se encontro el archivo: manda la respueta y guarda en el cache.
+        tipo_mime = obtener_tipo_mime(ruta_abs);
+        enviar_respuesta(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano);
+        //Guarda en cache.
+        put_cache(cache, ruta_archivo, tipo_mime, datos_archivo->data, datos_archivo->tamano);
+        //Libera el archivo.
+        liberar_archivo(datos_archivo);
+        return 1;
+    }
+}
 
  //Buscar el comienzo del archivo.
  char* encontrar_inicio_cuerpo(char* cabezilla){
@@ -211,7 +206,7 @@ void get_d20(int fd){
          if (strcmp(ruta_solicitud, "/d20") == 0){
              get_d20(fd);
          } else  {
-             obtener_archivo(fd, ruta_solicitud);
+             obtener_archivo(fd, cache, ruta_solicitud);
          }
      } else if (strcmp(tipo_solicitud, "POST") == 0) {
         if (strcmp(ruta_solicitud, "/save") == 0) {
