@@ -23,7 +23,7 @@
 #define ROOT_SERVIDOR "./serverroot"
 
 //Prototipo de funciones.
-int enviar_respuesta(int, char*, char*, void*, int);
+int enviar_respuesta(int, char*, char*, void*, unsigned long long);
 void resp_404(int);
 void get_d20(int);
 void get_fecha(int);
@@ -42,18 +42,18 @@ void handle_solicitud_http(int, cache*);
  * Return the value from the send() function.
  */
 
-int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, int tamano_contenido){
-    const int tamano_respuesta_maxima = 65536;
-    char respuesta[tamano_respuesta_maxima];
+int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido){
+    const unsigned long long tamano_respuesta_maxima = 65536 + tamano_contenido;
+    char* respuesta = (char*)malloc(tamano_respuesta_maxima*sizeof(char));
     time_t tiempo;
     struct tm* info;
     info = localtime(&tiempo);
 
-    int tamano_respuesta = sprintf(respuesta, 
+    unsigned long long tamano_respuesta = sprintf(respuesta, 
                                     "%s\n"
                                     "Date: %s"
                                     "Connection: close\n"
-                                    "Content-Length: %d\n"
+                                    "Content-Length: %llu\n"
                                     "Content-Type: %s\n"
                                     "\n",
                                     cabeza, asctime(info), tamano_contenido, tipo_contenido);
@@ -63,6 +63,7 @@ int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, i
     if(rv < 0){
         perror("send");
     }
+    free(respuesta);
     return rv;
 }
 
@@ -125,13 +126,13 @@ void get_d20(int fd){
 int obtener_archivo(int fd, cache* cache, char* ruta_archivo){
     char* tipo_mime; 
     file_data* datos_archivo;
-    entrada_cache* cacheent;
+    //entrada_cache* cacheent;
     //Checar si archivo esta en cache.
-    cacheent = get_cache(cache, ruta_archivo);
-    if(cacheent != NULL){
-        enviar_respuesta(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido);
-        return 1;
-    } else {
+    //cacheent = get_cache(cache, ruta_archivo);
+    //if(cacheent != NULL){
+    //    enviar_respuesta(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido);
+    //    return 1;
+    //} else {
         char ruta_abs[65536];
         //Si no encontro el archivo, intenta encontrar el archivo y abrirlo.
         snprintf(ruta_abs, sizeof(ruta_abs), "%s%s", ROOT_SERVIDOR, ruta_archivo);
@@ -157,7 +158,7 @@ int obtener_archivo(int fd, cache* cache, char* ruta_archivo){
         //Libera el archivo.
         liberar_archivo(datos_archivo);
         return 1;
-    }
+    //}
 }
 
  //Buscar el comienzo del archivo.

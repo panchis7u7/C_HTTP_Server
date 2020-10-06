@@ -9,6 +9,7 @@
 
 //Prototipos de Funcion.
 int htcmp(void*, void*);
+int htcmp2(void*, void*);
 void anadir_cuenta_entrada(hashtable*, int);
 void foreach_callback(void*, void*);
 void liberar_htent(void*, void*);
@@ -55,7 +56,7 @@ hashtable* crear_hash(int tamano, int (*hashfn)(void*, int, int)){
         hashfn = hashfn_predeterminada;
     }
 
-    hashtable* ht = malloc(sizeof *ht);
+    hashtable* ht = malloc(sizeof(hashtable));
 
     if(ht == NULL)
         return NULL;
@@ -115,7 +116,7 @@ void* put_hash_bin(hashtable* ht, void* llave, int tamano_llave, void* dato){
 
 //Obtener valor de la tabla hash con una llave tipo cadena (string).
 void* get_hash(hashtable* ht, char* llave){
-    return get_hash_bin(ht, llave, strlen(llave));
+    return get_hash_bin(ht, llave, strlen(llave)+1);
 }
 
 //Obtener valor de la tabla hash con una llave binaria.
@@ -125,7 +126,7 @@ void* get_hash_bin(hashtable* ht, void* llave, int tamano_llave){
     struct htent cmpent;
     cmpent.llave = llave;
     cmpent.tamano_llave = tamano_llave;
-    struct htent *tmp = encontrar_lista(lista, &cmpent, htcmp);
+    struct htent *tmp = encontrar_lista(lista, &cmpent, htcmp2);
     if(tmp == NULL)
         return NULL;
     return tmp->dato;
@@ -137,12 +138,22 @@ int htcmp(void* a, void* b){
     int dif_tamano = entB->tamano_llave - entA->tamano_llave;
     if(dif_tamano)
         return dif_tamano;  
-    return memcpy(entA->llave, entB->llave, entA->tamano_llave);
+    memcpy(entA->llave, entB->llave, entA->tamano_llave);
+    return 1;
+}
+
+//Funcion de comparacion entre llaves.
+int htcmp2(void* a, void* b){
+    struct htent* entA = a, *entB = b;
+    if(*((char*)(entA->llave)) == *((char*)(entB->llave))){
+        return 1;
+    }
+    return 0;
 }
 
 //Borrar valor de la tabla hash con una llave tipo cadena (string).
 void* eliminar_hash(hashtable* ht, char* llave){
-    return eliminar_hash_bin(ht, llave, strlen(llave));
+    return eliminar_hash_bin(ht, llave, strlen(llave)+1);
 }
 
 //Borrar valor de la tabla hash con una llave Binaria.
@@ -173,7 +184,7 @@ void foreach_hash(hashtable* ht, void(*f)(void*, void*), void* arg){
     carga_foreach_lista carga_util;
     carga_util.f = f;
     carga_util.arg = arg;
-    size_t i;
+    int i;
     for (i = 0; i < ht->tamano; i++)
     {
         Lista* lista = ht->cubeta[i];    

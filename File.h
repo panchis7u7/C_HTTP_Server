@@ -3,7 +3,7 @@
 
 typedef struct file_data{
     void* data;
-    int tamano;
+    unsigned long long tamano;
 }file_data;
 
 extern file_data* cargar_archivo(char* nombre_archivo);

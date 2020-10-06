@@ -9,20 +9,20 @@ int remover_cache(cache*, char*);
 void insertar_ec_lista(cache*, entrada_cache*);     
 void mover_cabeza_lista(cache*, entrada_cache*);   
 void limpiar_lru(cache*);
-void liberar_cache(cache*);
-void put_cache(cache*, char*, char*, void*, int);
 entrada_cache* remover_cola_lista(cache* cache);   
 cache* crear_cache(int, int); 
 
 //Asignar entrada de Cache.
-entrada_cache* asignar_entrada(char* ruta, char* tipo_contenido, void* contenido, int tamano_contenido){
+entrada_cache* asignar_entrada(char* ruta, char* tipo_contenido, void* contenido, unsigned long long tamano_contenido){
     entrada_cache* entrada = malloc(sizeof(entrada_cache));
     entrada->ruta = malloc(strlen(ruta) + 1); //+1 => terminador de cadena \r.
     //strcpy(entrada->ruta, ruta);    //strcpy puede llevar a un desbordamiento y puedes ser hackeado..., mejor usar strncpy!.
     //Porque? -> https://www.youtube.com/watch?v=7mKfWrNQcj0
-    strncpy(entrada->ruta, ruta, strlen(ruta));
+    //strcpy(entrada->ruta, ruta);
+    strncpy(entrada->ruta, ruta, strlen(ruta)+1);
     entrada->tipo_contenido = malloc(strlen(tipo_contenido) + 1);
     strncpy(entrada->tipo_contenido, tipo_contenido, strlen(tipo_contenido));
+    //strcpy(entrada->tipo_contenido, tipo_contenido);
     entrada->contenido = malloc(tamano_contenido);
     memcpy(entrada->contenido, contenido, tamano_contenido);
     return entrada;
@@ -40,7 +40,7 @@ void liberar_entrada(entrada_cache* entrada){
 void insertar_ec_lista(cache* cache, entrada_cache* ec){
     if(cache->cabeza == NULL){
         cache->cabeza = cache->cola = ec;
-        ec->sig = ec->ant = NULL;
+        ec->ant = ec->sig = NULL;
     } else {
         cache->cabeza->ant = ec;
         ec->sig = cache->cabeza;
@@ -108,7 +108,7 @@ void liberar_cache(cache* cache){
 }
 
 //Almacenar un elemento en la cache... tambien removera el item ultimamente utilizado.
-void put_cache(cache* cache, char* ruta, char* tipo_contenido, void* contenido, int tamano_contenido){
+void put_cache(cache* cache, char* ruta, char* tipo_contenido, void* contenido, unsigned long long tamano_contenido){
     entrada_cache* ec = asignar_entrada(ruta, tipo_contenido, contenido, tamano_contenido);
     insertar_ec_lista(cache, ec);
     put_hash(cache->indice, ruta, ec);

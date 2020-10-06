@@ -21,8 +21,10 @@ file_data* cargar_archivo(char* nombre_archivo){
 
     //Abrir el archivo para lectura.
     FILE* fp = fopen(nombre_archivo, "rb");
-    if (fp == NULL)
+    if (fp == NULL){
         return NULL;
+        printf("Error al abrir archivo: %s", nombre_archivo);
+    }
     
     //Reservar bytes.
     bytes_restantes = buf.st_size;
