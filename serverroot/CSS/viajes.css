@@ -1,0 +1,49 @@
+#Viajes {
+	width: auto;
+	height: auto;
+	display: flex;
+	flex-wrap: wrap;
+	background-color: white;
+	align-content: center;
+	position: relative;
+	margin: 0;
+}
+
+#Viajes article{
+	width: auto;
+	height: 450px;
+	margin-bottom: 2px;
+	position: relative;
+}
+
+#Viajes .contenedor div{
+	width: 100%;
+	height: 7em;
+	margin: 0;
+	background-color: rgba(0,0,0,0.50);
+	position: absolute;
+	top: 75%;
+	padding: 10px 10px 10px 20px;
+}
+
+#Viajes .contenedor div p {
+	color: white;
+	font-family: 'Roboto';
+	position: absolute;
+	font-size: 2em;
+	top: 50%;
+	width: auto;
+}
+
+.contenedor img {
+	width: 450px;
+	height: 450px;
+	object-fit: cover;
+	margin: 0;
+	padding: 0;
+}
+
+#Viajes .contenedor div:hover {
+	background-color: rgba(220,49,49,0.9);
+	cursor: pointer;
+}

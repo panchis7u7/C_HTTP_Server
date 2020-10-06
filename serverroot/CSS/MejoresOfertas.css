@@ -1,0 +1,20 @@
+@charset "utf-8";
+/* CSS Document */
+
+#MejoresOfertas {
+	width: 100%;
+	height: auto;
+	background-color: white;
+	text-align: center;
+	padding: 70px 100px;
+	font-family: 'Roboto';
+}
+
+#MejoresOfertas h2 {
+	font-size: 3em;
+}
+
+#MejoresOfertas p {
+	color: rgba(175,12,12,0.87);
+	font-size: 1.15em;
+}

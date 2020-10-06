@@ -32,7 +32,7 @@ char *obtener_tipo_mime(char *filename) {
     return "text/html";
   }
   if (strcmp(ext, "jpeg") == 0 || strcmp(ext, "jpg") == 0) {
-    return "image/jpg";
+    return "image/jpeg";
   }
   if (strcmp(ext, "css") == 0) {
     return "text/css";

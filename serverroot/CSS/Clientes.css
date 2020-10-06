@@ -1,0 +1,39 @@
+@charset "utf-8";
+@import url('https://fonts.googleapis.com/css?family=Cormorant+SC&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Cormorant+SC|Flamenco|Poiret+One&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+
+/* CSS Document */
+#Clientes {
+	width: 100%;
+	height: auto;
+	background-color: white;
+	text-align: center;
+	padding: 4em 6em;
+	
+}
+
+#Clientes .contenedor {
+	text-align: center;
+	width: 100%;
+	height: auto;
+	padding: 0px 10vw;
+}
+
+#Clientes .contenedor h2 {
+	padding-bottom: 1.3em;
+	font-size: 2.2em;
+	font-family: 'Roboto';
+}
+
+#Clientes .contenedor p:nth-child(2) {
+	font-size: 1.4em;
+	font-family: 'Roboto';
+	justify-content: center;
+}
+
+#Clientes .contenedor p:nth-child(3) {
+	margin-top: 20px;
+	font-size: 1.2em;
+	font-family: 'Roboto';
+}

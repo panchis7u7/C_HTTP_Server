@@ -1,0 +1,91 @@
+@charset "utf-8";
+/* CSS Document */
+
+footer {
+	width: 100%;
+	height: auto;
+	display: table;
+}
+
+#contactos {
+	height: 6vh;
+	width: 100%;
+	display: block;
+	background-color: none;
+}
+
+footer .icon-contacts {
+	display: block;
+	overflow: hidden; 
+	color: black;
+	z-index: 200;
+	padding-top: 1.1vh;
+	width: 20%;
+	height: 6vh;
+	text-align: center;
+	margin: 0;
+	font-size: 1.5em;
+	float: left;
+}
+
+#facebook {
+	background-color: white;
+	transition: background-color .5s;
+	transition: background-color .5s;
+}
+
+#gplus {
+	background-color: white;
+	-webkit-transition: background-color .5s;
+	-moz-transition: background-color .5s;
+}
+
+#twitter {
+	background-color: white;
+	-webkit-transition: background-color .5s;
+	-moz-transition: background-color .5s;
+}
+
+#mail {
+	background-color: white;
+	color: white;
+	-webkit-transition: background-color .5s;
+	-moz-transition: background-color .5s;
+}
+
+#telefono {
+	background-color: white;
+	color: white;
+	-webkit-transition: background-color .5s;
+	-moz-transition: background-color .5s;
+}
+
+#facebook:hover {
+	background-color: darkblue;
+	-webkit-transition: background-color .5s;
+	-moz-transition: background-color .5s;
+}
+
+#gplus:hover {
+	background-color: indianred;
+	-webkit-transition: background-color .5s;
+	-moz-transition: background-color .5s;
+}
+
+#twitter:hover {
+	background-color: skyblue;
+	-webkit-transition: background-color .5s;
+	-moz-transition: background-color .5s;
+}
+
+#mail:hover {
+	background-color: orange;
+	-webkit-transition: background-color .5s;
+	-moz-transition: background-color .5s;
+}
+
+#telefono:hover {
+	background-color: gray;
+	-webkit-transition: background-color .5s;
+	-moz-transition: background-color .5s;
+}

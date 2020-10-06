@@ -1,0 +1,62 @@
+@charset "utf-8";
+/* CSS Document */
+
+#destinos {
+	align-items: center;
+	height: auto;
+	background-color: white; 
+	width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	padding: 1em;
+	border-bottom: 2px solid rgba(104,104,104,0.30);
+}
+
+article .contenedor {
+	width: 18em;
+	height: 40px;
+	background-color: transparent;
+	border: 3px solid rgba(104,104,104,0.20);
+}
+
+#destinos article {
+	width: 18em;
+	height: auto;
+	background-color: transparent;
+	margin: 15px 1.6em 25px;
+}
+
+#destinos article p {
+	margin-bottom: 2em;
+	font-family: 'Roboto';
+}
+
+#Fecha .contenedor{
+	width: 8.4em;
+	display: inline-flex;
+}
+
+#Buscar {
+	background-color: rgba(64,63,204,1.00);
+	text-decoration: none;
+	width: 10em;
+	text-align: center;
+	vertical-align: middle;
+	padding-top: 0.5em;
+	border: none;
+	border-radius: 30px;
+	color: white;
+}
+
+#Buscar:hover {
+	cursor: pointer;
+}
+
+.input {
+	text-decoration: none;
+	border: none;
+	width: 100%;
+	height: 100%;
+	padding: 0px 6px;
+}

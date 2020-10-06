@@ -1,0 +1,59 @@
+@charset "utf-8";
+/* CSS Document */
+
+#Vuelos {
+	padding: 2vh 13vw;
+	background-color: white;
+}
+
+table{
+	padding: 20px;
+	border: none;
+	
+}
+
+th {
+	align-content: center;
+	background-color: white;
+	border-bottom: 2px solid rgba(104,104,104,0.30);
+	border-top: 2px solid rgba(104,104,104,0.30);
+	padding: 0;
+	margin: 0;
+}
+
+#BotonesTh{
+	width: 40vw;
+	height: 100%;
+}
+
+#BotonesTh div {
+	display: table-cell;
+	width: auto;
+	height: inherit;
+	margin: 0;
+	padding: 0;
+}
+
+.botones {
+	width: 8vw;
+	height: 12vh;
+	background-color: transparent;
+	border: none;
+}
+
+.Clase{
+	width: 6vw;
+	height: 12vh;
+	padding: 0;
+	margin: 0;
+}
+
+.Clase div{
+	width: 8vw;
+	height: auto;
+}
+
+.botones {
+	font-size: 1em;
+	height: auto;
+}
