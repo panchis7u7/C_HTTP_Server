@@ -1,0 +1,83 @@
+* {
+  /*padding: 5px;*/           /*Dar un espacio entre el contenido y el borde de la ventana*/
+  box-sizing: border-box; /*Usar el modelo de la caja.*/
+}
+
+body {
+  background-color: rgba(0, 0, 0, 0.55);
+}
+
+/*Observé que hay una medida especial para que
+el texto permanezca del mismo tamaño sin importar
+el tamaño de la ventana. "em".*/
+
+p {
+  color: black;
+  font-family: sans-serif;
+  font-size: 1.2em;
+  text-align: justify;
+  }
+
+.contenedor {
+  background: white;
+  padding: 1.2em;
+  margin: 20px 10px 20px 10px;
+}
+
+.contenedor_img {
+  position: relative;
+  text-align: center;
+  color: white;
+}
+
+.img_ejemplos {
+  display: block;
+  width: 30em;
+  margin: auto;   //Para centrar la imagen.
+}
+
+.abajo_izq {
+  position: absolute;
+  font-family: monospace;
+  bottom: 8px;
+  left: 16px;
+  color: white;
+  font-size: 1.3em;
+}
+
+.titulo {
+  color: black;
+  font-family: sans-serif;;
+  font-size: 1.4em;
+}
+
+#ejemplos {
+  width: inherit;
+  height: auto;
+  display: flex;
+  flex-wrap: wrap;
+  margin: auto;
+}
+
+#imagen_gauss {
+  display: block;
+  width: 100%;
+}
+
+#Formula {
+  text-align: center;
+  font-family: monospace;
+  font-size: 1.6em;
+}
+
+@media only screen and (min-width: 850px) {
+  #imagen_gauss {
+    position: relative;
+    width: 40%;
+    margin: auto;
+  }
+
+  .abajo_izq {
+    margin-left: 30%;
+  }
+}

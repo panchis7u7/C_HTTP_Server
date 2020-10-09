@@ -43,6 +43,7 @@ void handle_solicitud_http(int, cache*);
  */
 
 int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido){
+    printf("Hola");
     const unsigned long long tamano_respuesta_maxima = 65536 + tamano_contenido;
     char* respuesta = (char*)malloc(tamano_respuesta_maxima*sizeof(char));
     time_t tiempo;
@@ -126,13 +127,18 @@ void get_d20(int fd){
 int obtener_archivo(int fd, cache* cache, char* ruta_archivo){
     char* tipo_mime; 
     file_data* datos_archivo;
-    //entrada_cache* cacheent;
+    entrada_cache* cacheent;
     //Checar si archivo esta en cache.
-    //cacheent = get_cache(cache, ruta_archivo);
-    //if(cacheent != NULL){
-    //    enviar_respuesta(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido);
-    //    return 1;
-    //} else {
+    cacheent = get_cache(cache, ruta_archivo);
+    if(cacheent != NULL){
+        printf(" => Cache.\n");
+        if(cacheent->tipo_contenido != NULL) {printf("%s.\n", cacheent->tipo_contenido);}
+        if(cacheent->contenido != NULL) {printf("efe\n");}
+        if(cacheent->tamano_contenido > 0) {printf("%llu.\n", cacheent->tamano_contenido);}
+        enviar_respuesta(fd, "HTTP/1.1 200 OK", (char*)cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido);
+        return 1;
+    } else {
+        printf(" => Archivo.\n");
         char ruta_abs[65536];
         //Si no encontro el archivo, intenta encontrar el archivo y abrirlo.
         snprintf(ruta_abs, sizeof(ruta_abs), "%s%s", ROOT_SERVIDOR, ruta_archivo);
@@ -158,7 +164,7 @@ int obtener_archivo(int fd, cache* cache, char* ruta_archivo){
         //Libera el archivo.
         liberar_archivo(datos_archivo);
         return 1;
-    //}
+    }
 }
 
  //Buscar el comienzo del archivo.
@@ -200,7 +206,7 @@ int obtener_archivo(int fd, cache* cache, char* ruta_archivo){
 
      //Obtener el tipo de solicitud y la ruta .
      sscanf(solicitud, "%s %s %s", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
-     printf("Solicitud: %s %s %s\n", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
+     printf("Solicitud: %s %s %s", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
 
      //Lamar los manejadores de funciones apropiados, con los datos recibidos.
      if (strcmp(tipo_solicitud, "GET") == 0) {

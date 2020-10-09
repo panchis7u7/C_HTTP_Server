@@ -20,8 +20,8 @@ entrada_cache* asignar_entrada(char* ruta, char* tipo_contenido, void* contenido
     //Porque? -> https://www.youtube.com/watch?v=7mKfWrNQcj0
     //strcpy(entrada->ruta, ruta);
     strncpy(entrada->ruta, ruta, strlen(ruta)+1);
-    entrada->tipo_contenido = malloc(strlen(tipo_contenido) + 1);
-    strncpy(entrada->tipo_contenido, tipo_contenido, strlen(tipo_contenido));
+    entrada->tipo_contenido = malloc(strlen(tipo_contenido)+1);
+    strncpy(entrada->tipo_contenido, tipo_contenido, strlen(tipo_contenido)+1);
     //strcpy(entrada->tipo_contenido, tipo_contenido);
     entrada->contenido = malloc(tamano_contenido);
     memcpy(entrada->contenido, contenido, tamano_contenido);
@@ -118,6 +118,7 @@ void put_cache(cache* cache, char* ruta, char* tipo_contenido, void* contenido, 
 
 //Obtener una entrada de la cache.
 entrada_cache* get_cache(cache* cache, char* ruta){
+    //printf("\n%s", ruta);
     entrada_cache* ec;
     ec = get_hash(cache->indice, ruta);
     if(ec == NULL){

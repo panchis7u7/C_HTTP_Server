@@ -98,6 +98,7 @@ void* put_hash(hashtable* ht, char* llave, void* dato){
 
 //Insertar en la tabla hash con una llave binaria.
 void* put_hash_bin(hashtable* ht, void* llave, int tamano_llave, void* dato){
+    //printf("Put Hash => %s\n", (char*)llave);
     int indice = ht->hashf(llave, tamano_llave, ht->tamano);
     Lista* lista = ht->cubeta[indice];
     struct htent* ent = malloc(sizeof *ent);
@@ -116,17 +117,18 @@ void* put_hash_bin(hashtable* ht, void* llave, int tamano_llave, void* dato){
 
 //Obtener valor de la tabla hash con una llave tipo cadena (string).
 void* get_hash(hashtable* ht, char* llave){
-    return get_hash_bin(ht, llave, strlen(llave)+1);
+    return get_hash_bin(ht, llave, strlen(llave));
 }
 
 //Obtener valor de la tabla hash con una llave binaria.
 void* get_hash_bin(hashtable* ht, void* llave, int tamano_llave){
+    //printf("Get Hash => %s\n", (char*)llave);
     int indice = ht->hashf(llave, tamano_llave, ht->tamano);
     Lista* lista = ht->cubeta[indice];
     struct htent cmpent;
     cmpent.llave = llave;
     cmpent.tamano_llave = tamano_llave;
-    struct htent *tmp = encontrar_lista(lista, &cmpent, htcmp2);
+    struct htent *tmp = encontrar_lista(lista, &cmpent, htcmp);
     if(tmp == NULL)
         return NULL;
     return tmp->dato;
