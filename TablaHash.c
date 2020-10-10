@@ -110,6 +110,7 @@ void* put_hash_bin(hashtable* ht, void* llave, int tamano_llave, void* dato){
     if(insertar_final_lista(lista, ent) == NULL){
         free(ent->llave);
         free(ent);
+        return NULL;
     }
     anadir_cuenta_entrada(ht, +1);
     return dato;
@@ -129,8 +130,9 @@ void* get_hash_bin(hashtable* ht, void* llave, int tamano_llave){
     cmpent.llave = llave;
     cmpent.tamano_llave = tamano_llave;
     struct htent *tmp = encontrar_lista(lista, &cmpent, htcmp);
-    if(tmp == NULL)
+    if(tmp == NULL) {
         return NULL;
+    }
     return tmp->dato;
 }
 
@@ -138,10 +140,10 @@ void* get_hash_bin(hashtable* ht, void* llave, int tamano_llave){
 int htcmp(void* a, void* b){
     struct htent* entA = a, *entB = b;
     int dif_tamano = entB->tamano_llave - entA->tamano_llave;
-    if(dif_tamano)
+    if(dif_tamano){
         return dif_tamano;  
-    memcpy(entA->llave, entB->llave, entA->tamano_llave);
-    return 1;
+    }
+    return memcmp(entA->llave, entB->llave, entA->tamano_llave); 
 }
 
 //Funcion de comparacion entre llaves.

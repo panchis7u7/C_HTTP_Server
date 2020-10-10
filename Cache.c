@@ -13,9 +13,12 @@ entrada_cache* remover_cola_lista(cache* cache);
 cache* crear_cache(int, int); 
 
 //Asignar entrada de Cache.
-entrada_cache* asignar_entrada(char* ruta, char* tipo_contenido, void* contenido, unsigned long long tamano_contenido){
+entrada_cache* asignar_entrada(char* ruta, char* tipo_contenido, void* contenido, int tamano_contenido){
     entrada_cache* entrada = malloc(sizeof(entrada_cache));
-    entrada->ruta = malloc(strlen(ruta) + 1); //+1 => terminador de cadena \r.
+    if(entrada == NULL){
+        return NULL;
+    }
+    /*entrada->ruta = malloc(strlen(ruta) + 1); //+1 => terminador de cadena \r.
     //strcpy(entrada->ruta, ruta);    //strcpy puede llevar a un desbordamiento y puedes ser hackeado..., mejor usar strncpy!.
     //Porque? -> https://www.youtube.com/watch?v=7mKfWrNQcj0
     //strcpy(entrada->ruta, ruta);
@@ -24,7 +27,13 @@ entrada_cache* asignar_entrada(char* ruta, char* tipo_contenido, void* contenido
     strncpy(entrada->tipo_contenido, tipo_contenido, strlen(tipo_contenido)+1);
     //strcpy(entrada->tipo_contenido, tipo_contenido);
     entrada->contenido = malloc(tamano_contenido);
+    memcpy(entrada->contenido, contenido, tamano_contenido); */
+    entrada->ruta = strdup(ruta);
+    entrada->tipo_contenido = strdup(tipo_contenido);
+    entrada->tamano_contenido = tamano_contenido;
+    entrada->contenido = malloc(tamano_contenido);
     memcpy(entrada->contenido, contenido, tamano_contenido);
+    entrada->ant = entrada->sig = NULL;
     return entrada;
 }
 
@@ -75,19 +84,12 @@ entrada_cache* remover_cola_lista(cache* cache){
     return cola_prev;
 }
 
-//Limpiar entradas LRU si el cache se satura (oversize).
-void limpiar_lru(cache* cache){
-    while (cache->tamano_actual > cache->tamano_maximo)
-    {
-        entrada_cache* cola_prev = remover_cola_lista(cache);
-        eliminar_hash(cache->indice, cola_prev->ruta);  //Elimiar dato de la tabla hash, arg -> llave.
-        liberar_entrada(cola_prev);
-    }
-}
-
 //Crear nueva cache... tamano_maximo = numero de entradas en la cache, tamano_hash (0 predeterminado).
 cache* crear_cache(int tamano_maximo, int tamano_hash){
-    cache* cache = malloc(sizeof(cache));
+    cache* cache = malloc(sizeof(struct cache));
+    if(cache == NULL){
+        return NULL;
+    }
     cache->cabeza = cache->cola = NULL;
     cache->indice = crear_hash(tamano_hash, NULL);  //NULL -> funcion hash predeterminada.
     cache->tamano_maximo = tamano_maximo;
@@ -108,25 +110,31 @@ void liberar_cache(cache* cache){
 }
 
 //Almacenar un elemento en la cache... tambien removera el item ultimamente utilizado.
-void put_cache(cache* cache, char* ruta, char* tipo_contenido, void* contenido, unsigned long long tamano_contenido){
+void put_cache(cache* cache, char* ruta, char* tipo_contenido, void* contenido, int tamano_contenido){
+    //printf("\nPut cache: %s\n", ruta);
     entrada_cache* ec = asignar_entrada(ruta, tipo_contenido, contenido, tamano_contenido);
     insertar_ec_lista(cache, ec);
     put_hash(cache->indice, ruta, ec);
     cache->tamano_actual++;
-    limpiar_lru(cache); //Remover el elemento ultimamente utilizado almacenado en el cache.
+    if(cache->tamano_actual > cache->tamano_maximo){
+        entrada_cache* cola_antigua = remover_cola_lista(cache);
+        eliminar_hash(cache->indice, cola_antigua->ruta);
+        liberar_entrada(cola_antigua);
+        printf("Tamano actual: %d, Deberia de ser: %d\n", cache->tamano_actual, cache->tamano_maximo - 1);
+    }
 }
 
 //Obtener una entrada de la cache.
 entrada_cache* get_cache(cache* cache, char* ruta){
+    //printf("\nGet cache: %s\n", ruta);
     //printf("\n%s", ruta);
-    entrada_cache* ec;
-    ec = get_hash(cache->indice, ruta);
+    entrada_cache* ec = get_hash(cache->indice, ruta);
     if(ec == NULL){
         return NULL;
-    }
-
+    } else {
     mover_cabeza_lista(cache, ec);
     return ec;
+    }
 }
 
 int remover_cache(cache* cache, char* ruta){
