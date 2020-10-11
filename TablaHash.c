@@ -36,18 +36,18 @@ void anadir_cuenta_entrada(struct hashtable* ht, int d){
 }
 
 //Funcion Hash Modular (Predeterminada).
-int hashfn_predeterminada(void* dato, int tamano_dato, int conteo_cubeta){
-    const int R = 31; //Numero primo.
-    int h = 0;
+unsigned long long hashfn_predeterminada(void* dato, unsigned long long tamano_dato, int conteo_cubeta){
+    const unsigned long long R = 31; //Numero primo.
+    unsigned long long h = 0;
     unsigned char *p = dato;
-    for (int i = 0; i < tamano_dato; i++)
+    for (unsigned long long i = 0; i < tamano_dato; i++)
     {
-        h = (R * h + p[i]) % conteo_cubeta;
+        h = (R * h + p[i]) % (unsigned long long)conteo_cubeta;
     }
     return h;
 }
 
-struct hashtable* crear_hash(int tamano, int (*hashfn)(void*, int, int)){
+struct hashtable* crear_hash(int tamano, unsigned long long (*hashfn)(void*, unsigned long long, int)){
     if(tamano < 1){
         tamano = TAMANO_DEFAULT;
     }
@@ -64,7 +64,7 @@ struct hashtable* crear_hash(int tamano, int (*hashfn)(void*, int, int)){
     ht->numero_entradas = 0;
     ht->carga = 0;
     ht->cubeta = (struct Lista**)malloc(tamano * sizeof(struct Lista*));
-    ht->hashf = hashfn;
+    ht->hashfn = hashfn;
 
     for(int i = 0; i < tamano; i++){
         ht->cubeta[i] = crear_lista();
@@ -96,7 +96,7 @@ void* put_hash(struct hashtable* ht, char* llave, void* dato){
 //Insertar en la tabla hash con una llave binaria.
 void* put_hash_bin(struct hashtable* ht, void* llave, int tamano_llave, void* dato){
     //printf("Put Hash => %s.\n", (char*)llave);
-    int indice = ht->hashf(llave, tamano_llave, ht->tamano);
+    int indice = ht->hashfn(llave, tamano_llave, ht->tamano);
     struct Lista* lista = ht->cubeta[indice];
     struct htent* ent = (struct htent*)malloc(sizeof *ent);
     ent->llave = malloc(tamano_llave);
@@ -131,7 +131,7 @@ void* get_hash(struct hashtable* ht, char* llave){
 //Obtener valor de la tabla hash con una llave binaria.
 void* get_hash_bin(struct hashtable* ht, void* llave, int tamano_llave){
     //printf("Get Hash => %s.\n", (char*)llave);
-    int indice = ht->hashf(llave, tamano_llave, ht->tamano);
+    int indice = ht->hashfn(llave, tamano_llave, ht->tamano);
     struct Lista* lista = ht->cubeta[indice];
     struct htent cmpent;
     cmpent.llave = llave;
@@ -160,7 +160,7 @@ void* eliminar_hash(struct hashtable* ht, char* llave){
 
 //Borrar valor de la tabla hash con una llave Binaria.
 void* eliminar_hash_bin(struct hashtable* ht, void* llave, int tamano_llave){
-    int indice = ht->hashf(llave, tamano_llave, ht->tamano);
+    int indice = ht->hashfn(llave, tamano_llave, ht->tamano);
     struct Lista* lista = ht->cubeta[indice];
     struct htent cmpent;
     cmpent.llave = llave;

@@ -42,11 +42,11 @@
  * Return the value from the send() function.
  */
 
-int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, int tamano_contenido){
-    //const int tamano_respuesta_maxima = 65536 + tamano_contenido;
-    const int tamano_respuesta_maxima = 262144;
-    //char* respuesta = (char*)malloc(tamano_respuesta_maxima*sizeof(char));
-    char respuesta[tamano_respuesta_maxima];
+int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido){
+    const int tamano_respuesta_maxima = 65536 + tamano_contenido;
+    //const int tamano_respuesta_maxima = 262144;
+    char* respuesta = (char*)malloc(tamano_respuesta_maxima*sizeof(char));
+    //char respuesta[tamano_respuesta_maxima];
     char buffer[100];
 
     time_t tiempo;
@@ -59,7 +59,7 @@ int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, i
                                     "%s\n"
                                     "Date: %s\n"
                                     "Connection: close\n"
-                                    "Content-Length: %d\n"
+                                    "Content-Length: %llu\n"
                                     "Content-Type: %s\n"
                                     "\n",
                                     cabeza, buffer, tamano_contenido, tipo_contenido);
@@ -70,7 +70,7 @@ int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, i
     if(rv < 0){
         perror("send");
     }
-    //free(respuesta);
+    free(respuesta);
     return rv;
 }
 
@@ -142,6 +142,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
     if(cacheent){
         printf(" => Cache.\n");
         enviar_respuesta(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido);
+        return;
     } else {
         datos_archivo = cargar_archivo(ruta_abs);
         if (datos_archivo == NULL){
@@ -232,7 +233,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      struct sockaddr_storage info_addr;
      char s[INET6_ADDRSTRLEN];
 
-    struct cache* cache = crear_cache(10, 0);
+    struct cache* cache = crear_cache(20, 0);
 
      //Obtener un socket oyente.
      int listenfd = obtener_socket_oyente(PUERTO);

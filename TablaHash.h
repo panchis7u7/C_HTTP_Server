@@ -6,10 +6,10 @@ struct hashtable {
     int numero_entradas;    //Solo lectura.
     float carga;            //Solo lectura. ->Numero de llaves almacenadas en la tabla, dividida por la capacidad.
     struct Lista** cubeta; 
-    int (*hashf)(void* dato, int tamano_dato, int cuenta_cubeta);
-}hashtable;
+    unsigned long long (*hashfn)(void* dato, unsigned long long tamano_dato, int cuenta_cubeta);
+};//hashtable;
 
-extern struct hashtable* crear_hash(int tamano, int (*hashf)(void*, int, int));
+extern struct hashtable* crear_hash(int tamano, unsigned long long (*hashf)(void*, unsigned long long, int));
 extern void destruir_hash(struct hashtable* ht);
 extern void* put_hash(struct hashtable* ht, char* llave, void* dato);
 extern void* put_hash_bin(struct hashtable* ht, void* llave, int tamano_llave, void* dato);

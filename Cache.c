@@ -13,7 +13,7 @@ struct entrada_cache* remover_cola_lista(struct cache* cache);
 struct cache* crear_cache(int, int);  */
 
 //Asignar entrada de Cache.
-struct entrada_cache* asignar_entrada(char* ruta, char* tipo_contenido, void* contenido, int tamano_contenido){
+struct entrada_cache* asignar_entrada(char* ruta, char* tipo_contenido, void* contenido, unsigned long long tamano_contenido){
     struct entrada_cache* entrada = (struct entrada_cache*)malloc(sizeof *entrada);
     if(entrada == NULL){
         return NULL;
@@ -110,7 +110,7 @@ void liberar_cache(struct cache* cache){
 }
 
 //Almacenar un elemento en la cache... tambien removera el item ultimamente utilizado.
-void put_cache(struct cache* cache, char* ruta, char* tipo_contenido, void* contenido, int tamano_contenido){
+void put_cache(struct cache* cache, char* ruta, char* tipo_contenido, void* contenido, unsigned long long tamano_contenido){
     //printf("\nPut cache: %s\n", ruta);
     struct entrada_cache* ec = asignar_entrada(ruta, tipo_contenido, contenido, tamano_contenido);
     insertar_ec_lista(cache, ec);
