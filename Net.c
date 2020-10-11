@@ -1,4 +1,3 @@
-#include "Net.h"
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -7,13 +6,12 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <features.h>
+#include "Net.h"
 
 #define BACKLOG 10  //Numero de conecciones pendientes que la cola almacenara.
 
-//Esto obtiene una direccion de internet, ya sea IPV4 o IPV6.
-char* get_in_addr(const struct sockaddr* sa, char* s, size_t longitud_maxima){
-    switch(sa->sa_family){
+//Esto obtiene una direccion de internet, ya sea IPV4 o IPV6. => /*, char* s, size_t longitud_maxima*/
+/* switch(sa->sa_family){
         case AF_INET:
             inet_ntop(AF_INET, &(((struct sockaddr_in*)sa)->sin_addr), s, longitud_maxima);
             break;
@@ -24,7 +22,13 @@ char* get_in_addr(const struct sockaddr* sa, char* s, size_t longitud_maxima){
             strncpy(s, "Unknown AF", longitud_maxima);
             return NULL;
     }
-    return s;
+    return s; */
+
+void* get_in_addr(struct sockaddr* sa){
+    if(sa->sa_family == AF_INET){
+        return &(((struct sockaddr_in*)sa)->sin_addr);
+    }
+    return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
 //Regresar el socket oyente (listening) principal.

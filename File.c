@@ -15,7 +15,7 @@ file_data* cargar_archivo(char* nombre_archivo){
     }
 
     //Asegurarse si es un archivo normal.
-    if(!(buf.st_mode & __S_IFREG)){
+    if(!(buf.st_mode & S_IFREG)){
         return NULL;
     }
 

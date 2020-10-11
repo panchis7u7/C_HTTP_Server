@@ -23,14 +23,14 @@
 #define ROOT_SERVIDOR "./serverroot"
 
 //Prototipo de funciones.
-int enviar_respuesta(int, char*, char*, void*, int);
-void resp_404(int);
-void get_d20(int);
-void get_fecha(int);
-void post_guardado(int, char*);
-//int obtener_archivo_o_cache(int, cache*, char*);
-void obtener_archivo(int, cache*, char*);
-void handle_solicitud_http(int, cache*);
+// int enviar_respuesta(int, char*, char*, void*, int);
+// void resp_404(int);
+// void get_d20(int);
+// void get_fecha(int);
+// void post_guardado(int, char*);
+// //int obtener_archivo_o_cache(int, cache*, char*);
+// void obtener_archivo(int, struct cache*, char*);
+// void handle_solicitud_http(int, struct cache*);
 
 /**
  * Send an HTTP response
@@ -51,20 +51,22 @@ int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, i
 
     time_t tiempo;
     struct tm* info;
+    time(&tiempo);
     info = localtime(&tiempo);
     strftime(buffer, 100, "%a %b %d %T %Z %Y", info);
 
-    int tamano_respuesta = sprintf(respuesta, 
+    int tamano_respuesta = snprintf(respuesta, tamano_respuesta_maxima,
                                     "%s\n"
-                                    "Date: %s"
+                                    "Date: %s\n"
                                     "Connection: close\n"
                                     "Content-Length: %d\n"
                                     "Content-Type: %s\n"
                                     "\n",
                                     cabeza, buffer, tamano_contenido, tipo_contenido);
     memcpy(respuesta + tamano_respuesta, cuerpo, tamano_contenido);
+    tamano_respuesta += tamano_contenido;
     //Mandalo todo!. Guachar
-    int rv = send(fd, respuesta, tamano_respuesta + tamano_contenido, 0);
+    int rv = send(fd, respuesta, tamano_respuesta, 0);
     if(rv < 0){
         perror("send");
     }
@@ -95,8 +97,8 @@ void resp_404(int fd){
 void get_d20(int fd){
         srand(time(NULL) + getpid());
         char str[8];
-        int random = rand() % 20 + 1;
-        int tamano = sprintf(str, "%d/n", random);
+        int random = (rand() % (20 -1 + 1) + 1);
+        int tamano = sprintf(str, "%d", random);
         enviar_respuesta(fd, "HTTP/1.1 200 OK", "text/plain", str, tamano);
 }
 
@@ -128,18 +130,16 @@ void get_d20(int fd){
     //Guardar el cuerpo y enviar respuesta.
  }
 
-void obtener_archivo(int fd, cache* cache, char* ruta_archivo){
+void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
     char ruta_abs[4096];
     char* tipo_mime; 
     file_data* datos_archivo;
-    entrada_cache* cacheent;
+    struct entrada_cache* cacheent;
     //Obtener Ruta.
-    snprintf(ruta_abs, sizeof(ruta_abs), "%s%s", ROOT_SERVIDOR, ruta_archivo);
+    snprintf(ruta_abs, sizeof ruta_abs, "%s%s", ROOT_SERVIDOR, ruta_archivo);
     //Checar si archivo esta en cache.
-    //printf("\nruta-abs: %s\n", ruta_abs);
     cacheent = get_cache(cache, ruta_abs);
-
-    if(cacheent != NULL){
+    if(cacheent){
         printf(" => Cache.\n");
         enviar_respuesta(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido);
     } else {
@@ -161,62 +161,26 @@ void obtener_archivo(int fd, cache* cache, char* ruta_archivo){
         put_cache(cache, ruta_abs, tipo_mime, datos_archivo->data, datos_archivo->tamano);
         liberar_archivo(datos_archivo);
     }
-
-    // if(cacheent != NULL){
-    //     printf(" => Cache.\n");
-    //     if(cacheent->tipo_contenido != NULL) {printf("%s.\n", cacheent->tipo_contenido);}
-    //     if(cacheent->contenido != NULL) {printf("efe\n");}
-    //     if(cacheent->tamano_contenido > 0) {printf("%llu.\n", cacheent->tamano_contenido);}
-    //     enviar_respuesta(fd, "HTTP/1.1 200 OK", (char*)cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido);
-    //     return 1;
-    // } else {
-    //     printf(" => Archivo.\n");
-    //     char ruta_abs[65536];
-    //     //Si no encontro el archivo, intenta encontrar el archivo y abrirlo.
-    //     snprintf(ruta_abs, sizeof(ruta_abs), "%s%s", ROOT_SERVIDOR, ruta_archivo);
-    //     datos_archivo = cargar_archivo(ruta_abs);
-    //     if(datos_archivo == NULL){
-    //         snprintf(ruta_abs, sizeof(ruta_abs), "%s%s/index.html", ROOT_SERVIDOR, ruta_archivo);
-    //         datos_archivo = cargar_archivo(ruta_abs);
-    //         if(datos_archivo == NULL){
-    //             resp_404(fd);
-    //             return -1;
-    //         }
-    //         //Si se encontro el archivo: manda la respueta y guarda en el cache.
-    //     tipo_mime = obtener_tipo_mime(ruta_abs);
-    //     enviar_respuesta(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano);
-    //     liberar_archivo(datos_archivo);
-    //     return 1;
-    //     }
-    //     //Si se encontro el archivo: manda la respueta y guarda en el cache.
-    //     tipo_mime = obtener_tipo_mime(ruta_abs);
-    //     enviar_respuesta(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano);
-    //     //Guarda en cache.
-    //     put_cache(cache, ruta_archivo, tipo_mime, datos_archivo->data, datos_archivo->tamano);
-    //     //Libera el archivo.
-    //     liberar_archivo(datos_archivo);
-    //     return 1;
-    // }
 }
 
  //Buscar el comienzo del archivo.
  char* encontrar_inicio_cuerpo(char* cabezilla){
-     char* inicio;
-     if((inicio = strstr(cabezilla, "\r\n\r\n")) != NULL) {
-         return inicio + 2;
-     } else if ((inicio = strstr(cabezilla, "\n\n")) != NULL) {
-         return inicio + 2;
-     } else if((inicio = strstr(cabezilla, "\r\r")) != NULL){
-         return inicio + 2;
-     } else {
-         return inicio; 
-     } 
-     //(void)cabezilla;
-     //return NULL;
+    //  char* inicio;
+    //  if((inicio = strstr(cabezilla, "\r\n\r\n")) != NULL) {
+    //      return inicio + 2;
+    //  } else if ((inicio = strstr(cabezilla, "\n\n")) != NULL) {
+    //      return inicio + 2;
+    //  } else if((inicio = strstr(cabezilla, "\r\r")) != NULL){
+    //      return inicio + 2;
+    //  } else {
+    //      return inicio; 
+    //  } 
+    (void)cabezilla;
+    return NULL;
  }
 
  //Encargarse de la solicitud HTTP y mandar respuesta.
- void handle_solicitud_http(int fd, cache* cache){
+ void handle_solicitud_http(int fd, struct cache* cache){
      const int tamano_buffer_solicitud = 65536;
      char solicitud[tamano_buffer_solicitud];
      char* p;
@@ -261,7 +225,7 @@ void obtener_archivo(int fd, cache* cache, char* ruta_archivo){
     }    
  }
 
-char* get_in_addr(const struct sockaddr* sa, char* s, size_t longitud_maxima);
+//char* get_in_addr(const struct sockaddr* sa, char* s, size_t longitud_maxima);
 
  int main(void){
      int newfd; //Escucha en sock_fd, nueva coneccion en newfd.
@@ -283,17 +247,17 @@ char* get_in_addr(const struct sockaddr* sa, char* s, size_t longitud_maxima);
      //Bucle principal que acepta conecciones entrantes.
 
      while(1){
-         socklen_t tamano_sin = sizeof info_addr;
+        socklen_t tamano_sin = sizeof info_addr;
 
-         newfd = accept(listenfd, (struct sockaddr*)&info_addr, &tamano_sin);
-         if(newfd == -1){
-             perror("Accept.");
-             continue;
-         }
+        newfd = accept(listenfd, (struct sockaddr*)&info_addr, &tamano_sin);
+        if(newfd == -1){
+            perror("Accept.");
+            continue;
+        }
 
-         //Imprime un mensaje de que obtuvimos una coneccion.
-         get_in_addr(((struct sockaddr*)&info_addr), s, sizeof(s));
-         printf("Servidor Web: Se obtuvo coneccion de %s\n.", s);
+        //Imprime un mensaje de que obtuvimos una coneccion.
+        inet_ntop(info_addr.ss_family, get_in_addr((struct sockaddr *)&info_addr), s, sizeof s);
+        printf("Servidor Web: Se obtuvo conexion de %s\n.", s);
 
         handle_solicitud_http(newfd, cache);
         close(newfd);

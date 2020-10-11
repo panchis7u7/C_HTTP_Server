@@ -5,7 +5,7 @@
 #define TIPO_MIME_PREDETERMINADO "application/octet-stream"
 
 //Prototipo de funciones.
-char* string_minusculas(char*);
+//char* string_minusculas(char*);
 
 //Convierte a minusculas toda una cadena de caracteres.
 char* string_minusculas(char* s){
