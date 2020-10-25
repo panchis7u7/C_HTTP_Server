@@ -6,7 +6,7 @@ OBJS=Server.o Net.o File.o Mime.o Cache.o TablaHash.o ListaEnlazada.o
 all: Server
 
 Server: $(OBJS)
-	gcc - -o $@ $^
+	gcc -g -o $@ $^
 
 Net.o: Net.c Net.h
 

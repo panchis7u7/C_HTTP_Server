@@ -1,12 +1,12 @@
 CC=gcc
 CFLAGS=-Wall -Wextra
 
-OBJS=Server.o Net.o File.o Mime.o Cache.o TablaHash.o ListaEnlazada.o
+OBJS=Server.o Net.o File.o Mime.o Cache.o TablaHash.o ListaEnlazada.o Queue.o
 
 all: Server
 
 Server: $(OBJS)
-	gcc -g -o $@ $^
+	gcc -pthread -g -o $@ $^
 
 Net.o: Net.c Net.h
 
@@ -21,6 +21,8 @@ Cache.o: Cache.c Cache.h
 TablaHash.o: TablaHash.c TablaHash.h
 
 ListaEnlazada.o: ListaEnlazada.c ListaEnlazada.h
+
+Queue.o: Queue.c Queue.h
 
 clean:
 	rm -f $(OBJS)
