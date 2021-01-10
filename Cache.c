@@ -18,7 +18,8 @@ struct entrada_cache* asignar_entrada(char* ruta, char* tipo_contenido, void* co
     if(entrada == NULL){
         return NULL;
     }
-    /*entrada->ruta = malloc(strlen(ruta) + 1); //+1 => terminador de cadena \r.
+    
+    entrada->ruta = malloc(strlen(ruta) + 1); //+1 => terminador de cadena \r.
     //strcpy(entrada->ruta, ruta);    //strcpy puede llevar a un desbordamiento y puedes ser hackeado..., mejor usar strncpy!.
     //Porque? -> https://www.youtube.com/watch?v=7mKfWrNQcj0
     //strcpy(entrada->ruta, ruta);
@@ -27,7 +28,8 @@ struct entrada_cache* asignar_entrada(char* ruta, char* tipo_contenido, void* co
     strncpy(entrada->tipo_contenido, tipo_contenido, strlen(tipo_contenido)+1);
     //strcpy(entrada->tipo_contenido, tipo_contenido);
     entrada->contenido = malloc(tamano_contenido);
-    memcpy(entrada->contenido, contenido, tamano_contenido); */
+    memcpy(entrada->contenido, contenido, tamano_contenido);
+
     entrada->ruta = strdup(ruta);
     entrada->tipo_contenido = strdup(tipo_contenido);
     entrada->tamano_contenido = tamano_contenido;

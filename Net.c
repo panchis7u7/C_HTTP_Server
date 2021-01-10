@@ -13,13 +13,13 @@
 //Esto obtiene una direccion de internet, ya sea IPV4 o IPV6. => /*, char* s, size_t longitud_maxima*/
 /* switch(sa->sa_family){
         case AF_INET:
-            inet_ntop(AF_INET, &(((struct sockaddr_in*)sa)->sin_addr), s, longitud_maxima);
+            inet_ntop(AF_INET, &(((struct sockaddr_in*)sa)->sin_addr), s, maxlen);
             break;
         case AF_INET6:
-            inet_ntop(AF_INET6, &(((struct sockaddr_in6*)sa)->sin6_addr), s, longitud_maxima);
+            inet_ntop(AF_INET6, &(((struct sockaddr_in6*)sa)->sin6_addr), s, maxlen);
             break;
         default:
-            strncpy(s, "Unknown AF", longitud_maxima);
+            strncpy(s, "Unknown AF", maxlen);
             return NULL;
     }
     return s; */

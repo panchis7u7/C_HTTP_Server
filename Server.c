@@ -155,7 +155,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
                 return;
             }
         }
-        printf(" => Archivo\n.");
+        printf(" => Archivo.\n");
         tipo_mime = obtener_tipo_mime(ruta_abs);
         enviar_respuesta(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano);
         //printf("\nruta-abs: %s\n", ruta_abs);
@@ -164,20 +164,18 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
     }
 }
 
- //Buscar el comienzo del archivo.
+ //Buscar el comienzo del cuerpo del paquete HTTP.
  char* encontrar_inicio_cuerpo(char* cabezilla){
-    //  char* inicio;
-    //  if((inicio = strstr(cabezilla, "\r\n\r\n")) != NULL) {
-    //      return inicio + 2;
-    //  } else if ((inicio = strstr(cabezilla, "\n\n")) != NULL) {
-    //      return inicio + 2;
-    //  } else if((inicio = strstr(cabezilla, "\r\r")) != NULL){
-    //      return inicio + 2;
-    //  } else {
-    //      return inicio; 
-    //  } 
-    (void)cabezilla;
-    return NULL;
+     char* inicio;
+     if((inicio = strstr(cabezilla, "\r\n\r\n")) != NULL) {
+         return inicio + 2;
+     } else if ((inicio = strstr(cabezilla, "\n\n")) != NULL) {
+         return inicio + 2;
+     } else if((inicio = strstr(cabezilla, "\r\r")) != NULL){
+         return inicio + 2;
+     } else {
+         return inicio; 
+     } 
  }
 
  //Encargarse de la solicitud HTTP y mandar respuesta.
@@ -202,6 +200,8 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      p = encontrar_inicio_cuerpo(solicitud);
 
      char* cuerpo = p + 1;
+
+     printf("\nPaquete: %s\n", solicitud);
 
      //Obtener el tipo de solicitud y la ruta .
      sscanf(solicitud, "%s %s %s", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
@@ -247,7 +247,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
      //Bucle principal que acepta conecciones entrantes.
 
-     while(1){
+     while(1) {
         socklen_t tamano_sin = sizeof info_addr;
 
         newfd = accept(listenfd, (struct sockaddr*)&info_addr, &tamano_sin);
@@ -258,11 +258,10 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
         //Imprime un mensaje de que obtuvimos una coneccion.
         inet_ntop(info_addr.ss_family, get_in_addr((struct sockaddr *)&info_addr), s, sizeof s);
-        printf("Servidor Web: Se obtuvo conexion de %s\n.", s);
+        printf("Servidor Web: Se obtuvo conexion de %s.\n", s);
 
         handle_solicitud_http(newfd, cache);
         close(newfd);
- }
-
+    }
  return 0;
  }
