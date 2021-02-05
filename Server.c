@@ -2,6 +2,7 @@
 #include "File.h"
 #include "Mime.h"
 #include "Net.h"
+#include "Mysql.h"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -30,7 +31,16 @@
 // void post_guardado(int, char*);
 // //int obtener_archivo_o_cache(int, cache*, char*);
 // void obtener_archivo(int, struct cache*, char*);
-// void handle_solicitud_http(int, struct cache*);
+// void handle_solicitud_http(int, struct cache*); 
+
+#define KNRM  "\x1B[0m"
+#define KRED  "\x1B[31m"
+#define KGRN  "\x1B[32m"
+#define KYEL  "\x1B[33m"
+#define KBLU  "\x1B[34m"
+#define KMAG  "\x1B[35m"
+#define KCYN  "\x1B[36m"
+#define KWHT  "\x1B[37m"
 
 /**
  * Send an HTTP response
@@ -212,6 +222,8 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
          if (strcmp(ruta_solicitud, "/d20") == 0){
              get_d20(fd);
          } else  {
+             if(strcmp(obtener_tipo_mime(ruta_solicitud), "application/octet-stream") == 0)
+                printf("\n\nsdsd\n\n");
              obtener_archivo(fd, cache, ruta_solicitud);
          }
      } else if (strcmp(tipo_solicitud, "POST") == 0) {
@@ -221,9 +233,9 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
             resp_404(fd);
         }
      } else {
-         fprintf(stderr, "Tipo de solicitud desconocida \"%s\"\n", tipo_solicitud);
+         fprintf(stderr, "%sTipo de solicitud desconocida \"%s\"\n", KRED, tipo_solicitud);
          return;
-    }    
+    }   
  }
 
 //char* get_in_addr(const struct sockaddr* sa, char* s, size_t longitud_maxima);
@@ -239,11 +251,28 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      int listenfd = obtener_socket_oyente(PUERTO);
 
      if (listenfd < 0) {
-         fprintf(stderr, "Servidor Web: Error fatal al obtener socket oyente.\n");
+         fprintf(stderr, "\n%sServidor Web: Error fatal al obtener socket oyente.\n", KRED);
          exit(1);
      }
 
-     printf("Servidor Web: Esperando conecciones en el puerto %s...\n", PUERTO);
+     MYSQL* conn;
+     MYSQL_RES* result;
+     MYSQL_ROW* row;
+
+     MYSQL_CONN conn_data = {
+         .host = "localhost",
+         .user = "root",
+         .password = "password",
+         .dbname = "Libreria",
+         .sock = NULL,
+         .port = 3306,
+         .flag = 0
+     };
+
+     mysql_connect(&conn_data);
+     
+     
+     printf("%sServidor Web: Esperando conecciones en el puerto %s...\n", KBLU, PUERTO);
 
      //Bucle principal que acepta conecciones entrantes.
 
@@ -258,7 +287,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
         //Imprime un mensaje de que obtuvimos una coneccion.
         inet_ntop(info_addr.ss_family, get_in_addr((struct sockaddr *)&info_addr), s, sizeof s);
-        printf("Servidor Web: Se obtuvo conexion de %s.\n", s);
+        printf("%sServidor Web: Se obtuvo conexion de %s.\n", KMAG , s);
 
         handle_solicitud_http(newfd, cache);
         close(newfd);
