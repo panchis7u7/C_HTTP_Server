@@ -4,7 +4,7 @@ MYSQLCFLAGS= `mysql_config --cflags`
 MYSQLLIBS= `mysql_config --libs`
 INCLUDES= /usr/include/mysql/mysql.h
 
-OBJS=Server.o Net.o File.o Mime.o Cache.o TablaHash.o ListaEnlazada.o Queue.o Mysql.o
+OBJS=Server.o Net.o File.o Mime.o Cache.o TablaHash.o ListaEnlazada.o Queue.o Mysql.o Api.o
 
 all: Server
 
@@ -28,6 +28,8 @@ ListaEnlazada.o: ListaEnlazada.c ListaEnlazada.h
 Queue.o: Queue.c Queue.h
 
 Mysql.o: Mysql.c Mysql.h
+
+Api.o: Api.c Api.h
 
 clean:
 	rm -f $(OBJS)

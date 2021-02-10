@@ -3,6 +3,7 @@
 #include "Mime.h"
 #include "Net.h"
 #include "Mysql.h"
+#include "Api.h"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -42,6 +43,8 @@
 #define KCYN  "\x1B[36m"
 #define KWHT  "\x1B[37m"
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  * Send an HTTP response
  *
@@ -84,6 +87,10 @@ int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, u
     return rv;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //Manda una respuesta 404: No encontrado.
 void resp_404(int fd){
     char ruta_archivo[4096];
@@ -103,6 +110,10 @@ void resp_404(int fd){
     liberar_archivo(datos_archivo);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //Mandar una respuesta de punto final /d20.
 void get_d20(int fd){
         srand(time(NULL) + getpid());
@@ -112,6 +123,10 @@ void get_d20(int fd){
         enviar_respuesta(fd, "HTTP/1.1 200 OK", "text/plain", str, tamano);
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
  void get_fecha(int fd) {
     time_t gmt_format;
     time(&gmt_format);
@@ -120,6 +135,10 @@ void get_d20(int fd){
     int length = sprintf(current, "%s", asctime(gmtime(&gmt_format)));
     enviar_respuesta(fd, "HTTP/1.1 200 OK", "text/plain", current, length);
  }
+
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  void post_guardado(int fd, char* cuerpo){
      char* status;
@@ -139,6 +158,10 @@ void get_d20(int fd){
      enviar_respuesta(fd, "HTTP/1.1 200 OK", "application/json", cuerpo_respuesta, tamano);
     //Guardar el cuerpo y enviar respuesta.
  }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
     char ruta_abs[4096];
@@ -174,6 +197,10 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
  //Buscar el comienzo del cuerpo del paquete HTTP.
  char* encontrar_inicio_cuerpo(char* cabezilla){
      char* inicio;
@@ -188,8 +215,12 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      } 
  }
 
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
  //Encargarse de la solicitud HTTP y mandar respuesta.
- void handle_solicitud_http(int fd, struct cache* cache){
+ void handle_solicitud_http(int fd, struct cache* cache, MYSQL* conn){
      const int tamano_buffer_solicitud = 65536;
      char solicitud[tamano_buffer_solicitud];
      char* p;
@@ -211,14 +242,14 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
      char* cuerpo = p + 1;
 
-     printf("\nPaquete: %s\n", solicitud);
+     //printf("\nPaquete: %s\n", solicitud);
 
      //Obtener el tipo de solicitud y la ruta .
      sscanf(solicitud, "%s %s %s", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
      printf("Solicitud: %s %s %s", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
 
      //Lamar los manejadores de funciones apropiados, con los datos recibidos.
-     if (strcmp(tipo_solicitud, "GET") == 0) {
+     /* if (strcmp(tipo_solicitud, "GET") == 0) {
          if (strcmp(ruta_solicitud, "/d20") == 0){
              get_d20(fd);
          } else  {
@@ -235,8 +266,20 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      } else {
          fprintf(stderr, "%sTipo de solicitud desconocida \"%s\"\n", KRED, tipo_solicitud);
          return;
-    }   
+    }  */  
+
+    if(strcmp(tipo_solicitud, "GET") == 0){
+        if(strcmp(obtener_tipo_mime(ruta_solicitud), "application/octet-stream") == 0)
+            handleApi(fd, ruta_solicitud, conn, enviar_respuesta);
+        else 
+            obtener_archivo(fd, cache, ruta_solicitud);
+    }
+    return;
  }
+
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //char* get_in_addr(const struct sockaddr* sa, char* s, size_t longitud_maxima);
 
@@ -263,13 +306,13 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
          .host = "localhost",
          .user = "root",
          .password = "password",
-         .dbname = "Libreria",
+         .dbname = "Estudiantes",
          .sock = NULL,
          .port = 3306,
          .flag = 0
      };
 
-     mysql_connect(&conn_data);
+     conn = mysql_connect(&conn_data);
      
      
      printf("%sServidor Web: Esperando conecciones en el puerto %s...\n", KBLU, PUERTO);
@@ -289,8 +332,10 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
         inet_ntop(info_addr.ss_family, get_in_addr((struct sockaddr *)&info_addr), s, sizeof s);
         printf("%sServidor Web: Se obtuvo conexion de %s.\n", KMAG , s);
 
-        handle_solicitud_http(newfd, cache);
+        handle_solicitud_http(newfd, cache, conn);
         close(newfd);
     }
  return 0;
  }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
