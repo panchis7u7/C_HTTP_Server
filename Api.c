@@ -24,13 +24,13 @@ void handleApi(int fd, char* api,  MYSQL* conn, int(*f)(int fd, char* cabeza, ch
             length += snprintf(body+length, sizeof(body), "{");
             for(int i = 0; i < num_fields-1; i++){
                 if(IS_NUM(fields[i]->type))
-                    length += snprintf(body+length, sizeof(body),"\"%s\": %s, ", fields[i]->name, row[i]);
+                    length += snprintf(body+length, sizeof(body),"\"%s\":%s,", fields[i]->name, row[i]);
                 else
-                    length += snprintf(body+length, sizeof(body),"\"%s\": \"%s\", ", fields[i]->name, row[i]);
+                    length += snprintf(body+length, sizeof(body),"\"%s\":\"%s\",", fields[i]->name, row[i]);
             }
-            length += snprintf(body+length, sizeof(body), "}, ");
+            length += snprintf(body+length-1, sizeof(body), "},")-1;
         }
-        length += snprintf(body+length, sizeof(body), "]");
+        length += snprintf(body+length-1, sizeof(body), "]")-1;
 
         (*f)(fd, "HTTP/1.1 200 OK", "application/json", body, length);
         length = 0;

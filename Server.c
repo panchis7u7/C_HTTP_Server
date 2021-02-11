@@ -70,6 +70,7 @@ int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, u
 
     int tamano_respuesta = snprintf(respuesta, tamano_respuesta_maxima,
                                     "%s\n"
+                                    "Access-Control-Allow-Origin: *\n"
                                     "Date: %s\n"
                                     "Connection: close\n"
                                     "Content-Length: %llu\n"
@@ -246,7 +247,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
      //Obtener el tipo de solicitud y la ruta .
      sscanf(solicitud, "%s %s %s", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
-     printf("Solicitud: %s %s %s", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
+     printf("Solicitud: %s %s %s\n", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
 
      //Lamar los manejadores de funciones apropiados, con los datos recibidos.
      /* if (strcmp(tipo_solicitud, "GET") == 0) {
