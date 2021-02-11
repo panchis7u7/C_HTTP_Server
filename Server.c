@@ -71,6 +71,8 @@ int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, u
     int tamano_respuesta = snprintf(respuesta, tamano_respuesta_maxima,
                                     "%s\n"
                                     "Access-Control-Allow-Origin: *\n"
+                                    "Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE\n"
+                                    "Access-Control-Allow-Credentials: true\n"
                                     "Date: %s\n"
                                     "Connection: close\n"
                                     "Content-Length: %llu\n"
