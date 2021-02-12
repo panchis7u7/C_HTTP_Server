@@ -1,7 +1,7 @@
 #include "Api.h"
 #include <string.h>
 
-void handleApi(int fd, char* api,  MYSQL* conn, int(*f)(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido)) {
+void handleApi(int fd, char* api,  MYSQL* conn, int(*f)(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido, char* flags)) {
     if(strcmp(api, "/prueba") == 0) {
         MYSQL_FIELD* field;
         MYSQL_RES* res;
@@ -32,7 +32,7 @@ void handleApi(int fd, char* api,  MYSQL* conn, int(*f)(int fd, char* cabeza, ch
         }
         length += snprintf(body+length-1, sizeof(body), "]")-1;
 
-        (*f)(fd, "HTTP/1.1 200 OK", "application/json", body, length);
+        (*f)(fd, "HTTP/1.1 200 OK", "application/json", body, length, "");
         length = 0;
         mysql_free_result(res);
     }

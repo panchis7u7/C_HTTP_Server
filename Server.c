@@ -43,6 +43,9 @@
 #define KCYN  "\x1B[36m"
 #define KWHT  "\x1B[37m"
 
+int listenfd = 0;
+char* CORS = "Access-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE\r\n";
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  * Send an HTTP response
@@ -54,7 +57,7 @@
  * Return the value from the send() function.
  */
 
-int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido){
+int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido, char* flags){
     const int tamano_respuesta_maxima = 65536 + tamano_contenido;
     //const int tamano_respuesta_maxima = 262144;
     char* respuesta = (char*)malloc(tamano_respuesta_maxima*sizeof(char));
@@ -70,21 +73,20 @@ int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, u
     int tamano_respuesta = snprintf(respuesta, tamano_respuesta_maxima,
                                     "%s\n"
                                     "Access-Control-Allow-Origin: *\n"
-                                    "Access-Control-Allow-Headers: *\n"
-                                    "Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE\n"
-                                    "Access-Control-Allow-Credentials: true\n"
+                                    "%s"
                                     "Date: %s\n"
                                     "Connection: close\n"
                                     "Content-Length: %llu\n"
                                     "Content-Type: %s\n"
                                     "\n",
-                                    cabeza, buffer, tamano_contenido, tipo_contenido);
+                                    cabeza, flags, buffer, tamano_contenido, tipo_contenido);
     memcpy(respuesta + tamano_respuesta, cuerpo, tamano_contenido);
     tamano_respuesta += tamano_contenido;
     //Mandalo todo!. Guachar
     int rv = send(fd, respuesta, tamano_respuesta, 0);
     if(rv < 0){
         perror("send");
+        return -1;
     }
     free(respuesta);
     return rv;
@@ -109,7 +111,7 @@ void resp_404(int fd){
     }
 
     tipo_mime = obtener_tipo_mime(ruta_archivo);
-    enviar_respuesta(fd, "HTTP/1.1 404 NOT FOUND", tipo_mime, datos_archivo->data, datos_archivo->tamano);
+    enviar_respuesta(fd, "HTTP/1.1 404 NOT FOUND", tipo_mime, datos_archivo->data, datos_archivo->tamano, "");
     liberar_archivo(datos_archivo);
 }
 
@@ -123,7 +125,7 @@ void get_d20(int fd){
         char str[8];
         int random = (rand() % (20 -1 + 1) + 1);
         int tamano = sprintf(str, "%d", random);
-        enviar_respuesta(fd, "HTTP/1.1 200 OK", "text/plain", str, tamano);
+        enviar_respuesta(fd, "HTTP/1.1 200 OK", "text/plain", str, tamano, "");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -136,7 +138,7 @@ void get_d20(int fd){
     char current[26]; // gmtime documentation stated that a user-supplied buffer.
                       // should have at least 26 bytes.
     int length = sprintf(current, "%s", asctime(gmtime(&gmt_format)));
-    enviar_respuesta(fd, "HTTP/1.1 200 OK", "text/plain", current, length);
+    enviar_respuesta(fd, "HTTP/1.1 200 OK", "text/plain", current, length, "");
  }
 
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,7 +160,7 @@ void get_d20(int fd){
 
      char cuerpo_respuesta[128];
      int tamano = sprintf(cuerpo_respuesta, "{\"status\": \"%s\"}\n", status);
-     enviar_respuesta(fd, "HTTP/1.1 200 OK", "application/json", cuerpo_respuesta, tamano);
+     enviar_respuesta(fd, "HTTP/1.1 200 OK", "application/json", cuerpo_respuesta, tamano, "");
     //Guardar el cuerpo y enviar respuesta.
  }
 
@@ -177,7 +179,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
     cacheent = get_cache(cache, ruta_abs);
     if(cacheent){
         printf(" => Cache.\n");
-        enviar_respuesta(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido);
+        enviar_respuesta(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido, "");
         return;
     } else {
         datos_archivo = cargar_archivo(ruta_abs);
@@ -193,7 +195,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
         }
         printf(" => Archivo.\n");
         tipo_mime = obtener_tipo_mime(ruta_abs);
-        enviar_respuesta(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano);
+        enviar_respuesta(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano, "");
         //printf("\nruta-abs: %s\n", ruta_abs);
         put_cache(cache, ruta_abs, tipo_mime, datos_archivo->data, datos_archivo->tamano);
         liberar_archivo(datos_archivo);
@@ -277,7 +279,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
         else 
             obtener_archivo(fd, cache, ruta_solicitud);
     } else if(strcmp(tipo_solicitud, "OPTIONS") == 0){
-        enviar_respuesta(fd, "HTTP/1.1 200 OK", "application/json", "", 0);
+        enviar_respuesta(fd, "HTTP/1.1 200 OK", "application/json", "", 0, CORS);
     }
     return;
  }
@@ -286,22 +288,36 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-//char* get_in_addr(const struct sockaddr* sa, char* s, size_t longitud_maxima);
+ //Gracefully quit the program.
+ void signalHandler(){
+     write(STDOUT_FILENO, "\n\x1B[31mQuitting...\n", 19);
+     close(listenfd);
+     exit(0);
+ }
+
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  int main(void){
      int newfd; //Escucha en sock_fd, nueva coneccion en newfd.
      struct sockaddr_storage info_addr;
      char s[INET6_ADDRSTRLEN];
 
-    struct cache* cache = crear_cache(20, 0);
-
      //Obtener un socket oyente.
-     int listenfd = obtener_socket_oyente(PUERTO);
+     listenfd = obtener_socket_oyente(PUERTO);
 
      if (listenfd < 0) {
          fprintf(stderr, "\n%sServidor Web: Error fatal al obtener socket oyente.\n", KRED);
          exit(1);
      }
+
+     struct sigaction sa;
+     sa.sa_handler = signalHandler;
+
+     //handle ^C quitting and Seg faults.
+     sigaction(SIGINT, &sa,NULL);
+     sigaction(SIGSEGV, &sa, NULL);
+
+    struct cache* cache = crear_cache(20, 0);
 
      MYSQL* conn;
      MYSQL_RES* result;
