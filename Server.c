@@ -43,7 +43,6 @@
 #define KCYN  "\x1B[36m"
 #define KWHT  "\x1B[37m"
 
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
  * Send an HTTP response
@@ -71,6 +70,7 @@ int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, u
     int tamano_respuesta = snprintf(respuesta, tamano_respuesta_maxima,
                                     "%s\n"
                                     "Access-Control-Allow-Origin: *\n"
+                                    "Access-Control-Allow-Headers: *\n"
                                     "Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE\n"
                                     "Access-Control-Allow-Credentials: true\n"
                                     "Date: %s\n"
@@ -276,6 +276,8 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
             handleApi(fd, ruta_solicitud, conn, enviar_respuesta);
         else 
             obtener_archivo(fd, cache, ruta_solicitud);
+    } else if(strcmp(tipo_solicitud, "OPTIONS") == 0){
+        enviar_respuesta(fd, "HTTP/1.1 200 OK", "application/json", "", 0);
     }
     return;
  }
