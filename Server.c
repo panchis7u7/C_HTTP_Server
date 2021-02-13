@@ -251,27 +251,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
      //Obtener el tipo de solicitud y la ruta .
      sscanf(solicitud, "%s %s %s", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
-     printf("Solicitud: %s %s %s\n", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
-
-     //Lamar los manejadores de funciones apropiados, con los datos recibidos.
-     /* if (strcmp(tipo_solicitud, "GET") == 0) {
-         if (strcmp(ruta_solicitud, "/d20") == 0){
-             get_d20(fd);
-         } else  {
-             if(strcmp(obtener_tipo_mime(ruta_solicitud), "application/octet-stream") == 0)
-                printf("\n\nsdsd\n\n");
-             obtener_archivo(fd, cache, ruta_solicitud);
-         }
-     } else if (strcmp(tipo_solicitud, "POST") == 0) {
-        if (strcmp(ruta_solicitud, "/save") == 0) {
-            post_guardado(fd, cuerpo);
-        } else {
-            resp_404(fd);
-        }
-     } else {
-         fprintf(stderr, "%sTipo de solicitud desconocida \"%s\"\n", KRED, tipo_solicitud);
-         return;
-    }  */  
+     printf("Solicitud: %s %s %s\n", tipo_solicitud, ruta_solicitud, protocolo_solicitud);  
 
     if(strcmp(tipo_solicitud, "GET") == 0){
         if(strcmp(obtener_tipo_mime(ruta_solicitud), "application/octet-stream") == 0)
@@ -334,7 +314,6 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      };
 
      conn = mysql_connect(&conn_data);
-     
      
      printf("%sServidor Web: Esperando conecciones en el puerto %s...\n", KBLU, PUERTO);
 
