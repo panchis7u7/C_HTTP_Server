@@ -175,6 +175,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
     struct entrada_cache* cacheent;
     //Obtener Ruta.
     snprintf(ruta_abs, sizeof ruta_abs, "%s%s", ROOT_SERVIDOR, ruta_archivo);
+    printf("\n%s\n", ruta_abs);
     //Checar si archivo esta en cache.
     cacheent = get_cache(cache, ruta_abs);
     if(cacheent){
@@ -240,6 +241,8 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
         return;
      }
 
+     printf("\n%s\n", solicitud);
+
      //Poner un terminador de cadena al final de la solicitud.
      solicitud[bytes_rcvd] = '\0';
 
@@ -252,11 +255,11 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      //Obtener el tipo de solicitud y la ruta .
      sscanf(solicitud, "%s %s %s", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
      printf("Solicitud: %s %s %s\n", tipo_solicitud, ruta_solicitud, protocolo_solicitud);  
-
+    
     if(strcmp(tipo_solicitud, "GET") == 0){
         if(strcmp(obtener_tipo_mime(ruta_solicitud), "application/octet-stream") == 0)
             handleApi(fd, ruta_solicitud, conn, enviar_respuesta);
-        else 
+        else
             obtener_archivo(fd, cache, ruta_solicitud);
     } else if(strcmp(tipo_solicitud, "OPTIONS") == 0){
         enviar_respuesta(fd, "HTTP/1.1 200 OK", "application/json", "", 0, CORS);

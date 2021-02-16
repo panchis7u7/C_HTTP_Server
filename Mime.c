@@ -9,12 +9,42 @@
 
 //Convierte a minusculas toda una cadena de caracteres.
 char* string_minusculas(char* s){
-    char* p;
-    for (p = s; *p != '\0'; p++)
-    {
-        *p = tolower(*p);
-    }
-    return s;
+  char* p;
+  for(p = s; *p != '\0'; p++)
+  {
+    *p = tolower(*p);
+  }
+  return s;
+}
+
+char* trim(char* str, char symbol){
+  char* p;
+  printf("\nCadena: %s\n", str);
+  p = str;
+  while(*p != symbol || *p != "\r"){
+    p++;
+    printf("%c", *p);
+  }
+  *p = "/0";
+  return str;
+}
+
+char* cleanText(char* str){
+  int version = 0;
+  for (int i = 0, j; str[i] != '\0'; ++i) {
+      // enter the loop if the character is not an alphabet
+      // and not the null character.
+      if(str[i] == "?")
+        version = 1;
+      while (!(str[i] >= 'a' && str[i] <= 'z') && !(str[i] >= 'A' && str[i] <= 'Z') && !((str[i] >= '0' && str[i] <= '9') && version != 0) && !(str[i] == '\0')) {
+         for (j = i; str[j] != '\0'; ++j) {
+            // if jth element of line is not an alphabet,
+            // assign the value of (j+1)th element to the jth element.
+            str[j] = str[j + 1];
+         }
+         str[j] = '\0';
+      }
+   }
 }
 
 //Regresa un tipo MIME para un nombre de archivo dado.
@@ -26,6 +56,7 @@ char *obtener_tipo_mime(char *filename) {
   }
   ext++;
   string_minusculas(ext);
+  cleanText(ext);
   // Esto es O(n) y deberia de ser O(1).
 
   if (strcmp(ext, "html") == 0 || strcmp(ext, "htm") == 0) {
