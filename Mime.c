@@ -2,7 +2,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#define TIPO_MIME_PREDETERMINADO "application/octet-stream"
+#define DEFAULT_MIME "application/octet-stream"
 
 //Prototipo de funciones.
 //char* string_minusculas(char*);
@@ -15,18 +15,6 @@ char* string_minusculas(char* s){
     *p = tolower(*p);
   }
   return s;
-}
-
-char* trim(char* str, char symbol){
-  char* p;
-  printf("\nCadena: %s\n", str);
-  p = str;
-  while(*p != symbol || *p != "\r"){
-    p++;
-    printf("%c", *p);
-  }
-  *p = "/0";
-  return str;
 }
 
 char* cleanText(char* str){
@@ -52,7 +40,7 @@ char *obtener_tipo_mime(char *filename) {
   char *ext = strrchr(filename, '.');
 
   if (ext == NULL) {
-    return TIPO_MIME_PREDETERMINADO;
+    return DEFAULT_MIME;
   }
   ext++;
   string_minusculas(ext);
@@ -102,5 +90,5 @@ char *obtener_tipo_mime(char *filename) {
     return "text/csv";
   }
 
-  return TIPO_MIME_PREDETERMINADO;
+  return DEFAULT_MIME;
 }

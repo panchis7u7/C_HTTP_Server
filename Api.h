@@ -3,6 +3,6 @@
 
 #include "Mysql.h"
 
-extern void handleApi(int fd, char* api, MYSQL* conn, int(*f)(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido, char* flags)); 
+void handleGetApi(int fd, char* api, MYSQL* conn, int(*f)(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido, char* flags)); 
 
 #endif //_API_H_

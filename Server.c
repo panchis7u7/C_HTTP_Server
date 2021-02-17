@@ -25,14 +25,13 @@
 #define ROOT_SERVIDOR "./serverroot"
 
 //Prototipo de funciones.
-// int enviar_respuesta(int, char*, char*, void*, int);
-// void resp_404(int);
-// void get_d20(int);
-// void get_fecha(int);
-// void post_guardado(int, char*);
-// //int obtener_archivo_o_cache(int, cache*, char*);
-// void obtener_archivo(int, struct cache*, char*);
-// void handle_solicitud_http(int, struct cache*); 
+int enviar_respuesta(int, char*, char*, void*, unsigned long long, char*);
+void resp_404(int);
+void get_d20(int);
+void get_fecha(int);
+void post_guardado(int, char*);
+void obtener_archivo(int, struct cache*, char*);
+void handle_solicitud_http(int, struct cache*, MYSQL*); 
 
 #define KNRM  "\x1B[0m"
 #define KRED  "\x1B[31m"
@@ -241,8 +240,6 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
         return;
      }
 
-     printf("\n%s\n", solicitud);
-
      //Poner un terminador de cadena al final de la solicitud.
      solicitud[bytes_rcvd] = '\0';
 
@@ -258,7 +255,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
     
     if(strcmp(tipo_solicitud, "GET") == 0){
         if(strcmp(obtener_tipo_mime(ruta_solicitud), "application/octet-stream") == 0)
-            handleApi(fd, ruta_solicitud, conn, enviar_respuesta);
+            handleGetApi(fd, ruta_solicitud, conn, enviar_respuesta);
         else
             obtener_archivo(fd, cache, ruta_solicitud);
     } else if(strcmp(tipo_solicitud, "OPTIONS") == 0){
