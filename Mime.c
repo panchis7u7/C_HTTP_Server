@@ -17,14 +17,11 @@ char* string_minusculas(char* s){
   return s;
 }
 
-char* cleanText(char* str){
-  int version = 0;
+void cleanText(char* str){
   for (int i = 0, j; str[i] != '\0'; ++i) {
       // enter the loop if the character is not an alphabet
       // and not the null character.
-      if(str[i] == "?")
-        version = 1;
-      while (!(str[i] >= 'a' && str[i] <= 'z') && !(str[i] >= 'A' && str[i] <= 'Z') && !((str[i] >= '0' && str[i] <= '9') && version != 0) && !(str[i] == '\0')) {
+      while (!(str[i] >= 'a' && str[i] <= 'z') && !(str[i] >= 'A' && str[i] <= 'Z') && !(str[i] == '\0')) {
          for (j = i; str[j] != '\0'; ++j) {
             // if jth element of line is not an alphabet,
             // assign the value of (j+1)th element to the jth element.

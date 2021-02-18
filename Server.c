@@ -45,7 +45,14 @@ int listenfd = 0;
 char* CORS = "Access-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE\r\n";
 
 char* cleanHttp(char* str){
-    strstr(str, '%20');
+    char* index;
+    if((index = strstr(str, "%20")) != NULL){
+        index[0] = ' ';
+        strncpy(index+1, index+3, strlen(index));
+    }
+    if((index = strstr(str, "'")) != NULL){
+        strncpy(index, index+1, strlen(index));
+    }
    return str;
 }
 
@@ -326,7 +333,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
         }
 
         //Imprime un mensaje de que obtuvimos una coneccion.
-        inet_ntop(info_addr.ss_family, get_in_addr((struct sockaddr *)&info_addr), s, sizeof s);
+        inet_ntop(info_addr.ss_family, get_in_addr((struct sockaddr*)&info_addr), s, sizeof s);
         printf("%sServidor Web: Se obtuvo conexion de %s.\n", KMAG , s);
 
         handle_solicitud_http(newfd, cache, conn);
