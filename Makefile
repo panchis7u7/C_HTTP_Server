@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Wextra
+CFLAGS=-Wall -Wextra -Werror
 MYSQLCFLAGS= `mysql_config --cflags`
 MYSQLLIBS= `mysql_config --libs`
 INCLUDES= /usr/include/mysql/mysql.h

@@ -23,6 +23,14 @@
 #define PUERTO "3490"
 #define ARCHIVOS_SERVIDOR "./serverfiles"
 #define ROOT_SERVIDOR "./serverroot"
+#define KNRM  "\x1B[0m"
+#define KRED  "\x1B[31m"
+#define KGRN  "\x1B[32m"
+#define KYEL  "\x1B[33m"
+#define KBLU  "\x1B[34m"
+#define KMAG  "\x1B[35m"
+#define KCYN  "\x1B[36m"
+#define KWHT  "\x1B[37m"
 
 //Prototipo de funciones.
 int enviar_respuesta(int, char*, char*, void*, unsigned long long, char*);
@@ -33,17 +41,13 @@ void post_guardado(int, char*);
 void obtener_archivo(int, struct cache*, char*);
 void handle_solicitud_http(int, struct cache*, MYSQL*); 
 
-#define KNRM  "\x1B[0m"
-#define KRED  "\x1B[31m"
-#define KGRN  "\x1B[32m"
-#define KYEL  "\x1B[33m"
-#define KBLU  "\x1B[34m"
-#define KMAG  "\x1B[35m"
-#define KCYN  "\x1B[36m"
-#define KWHT  "\x1B[37m"
-
 int listenfd = 0;
 char* CORS = "Access-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE\r\n";
+
+char* cleanHttp(char* str){
+    strstr(str, '%20');
+   return str;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /**
@@ -228,7 +232,6 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
  void handle_solicitud_http(int fd, struct cache* cache, MYSQL* conn){
      const int tamano_buffer_solicitud = 65536;
      char solicitud[tamano_buffer_solicitud];
-     char* p;
      char tipo_solicitud[8]; //Get o Post.
      char ruta_solicitud[1024];  //info etc.
      char protocolo_solicitud[128]; //HTTP/1.1.
@@ -243,10 +246,6 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      //Poner un terminador de cadena al final de la solicitud.
      solicitud[bytes_rcvd] = '\0';
 
-     p = encontrar_inicio_cuerpo(solicitud);
-
-     char* cuerpo = p + 1;
-
      //printf("\nPaquete: %s\n", solicitud);
 
      //Obtener el tipo de solicitud y la ruta .
@@ -257,7 +256,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
         if(strcmp(obtener_tipo_mime(ruta_solicitud), "application/octet-stream") == 0)
             handleGetApi(fd, ruta_solicitud, conn, enviar_respuesta);
         else
-            obtener_archivo(fd, cache, ruta_solicitud);
+            obtener_archivo(fd, cache, cleanHttp(ruta_solicitud));
     } else if(strcmp(tipo_solicitud, "OPTIONS") == 0){
         enviar_respuesta(fd, "HTTP/1.1 200 OK", "application/json", "", 0, CORS);
     }
@@ -300,8 +299,6 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
     struct cache* cache = crear_cache(20, 0);
 
      MYSQL* conn;
-     MYSQL_RES* result;
-     MYSQL_ROW* row;
 
      MYSQL_CONN conn_data = {
          .host = "localhost",
