@@ -188,7 +188,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
     //Checar si archivo esta en cache.
     cacheent = get_cache(cache, ruta_abs);
     if(cacheent){
-        printf(" %s=> Cache.\n", KBLU);
+        printf(" %s=> Cache.", KBLU);
         sendResponse(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido, "");
         return;
     } else {
@@ -203,7 +203,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
                 return;
             }
         }
-        printf(" %s=> Archivo.\n", KYEL);
+        printf(" %s=> Archivo.", KYEL);
         tipo_mime = obtener_tipo_mime(ruta_abs);
         sendResponse(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano, "");
         //printf("\nruta-abs: %s\n", ruta_abs);
@@ -291,9 +291,13 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      listenfd = obtener_socket_oyente(PUERTO);
 
      if (listenfd < 0) {
-         fprintf(stderr, "\n%sServidor Web: Error fatal al obtener socket oyente.\n", KRED);
+         fprintf(stderr, "\n%sStratus WebServer: Fatal error at opening listening socket.\n", KRED);
          exit(1);
      }
+
+     printf("%s-----------------------------------------------------------\n", KGRN);
+     printf("%s | Created by: Carlos Sebastian Madrigal Rodriguez. |\n", KGRN);
+     printf("%s-----------------------------------------------------------\n\n", KGRN);
 
      struct sigaction sa;
      sa.sa_handler = signalHandler;
@@ -318,7 +322,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
      conn = mysql_connect(&conn_data);
      
-     printf("%sServidor Web: Esperando conecciones en el puerto %s...\n", KBLU, PUERTO);
+     printf("%sStratus WebServer: Waiting for new conections on port %s...\n", KBLU, PUERTO);
 
      //Bucle principal que acepta conecciones entrantes.
 
@@ -333,7 +337,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
         //Imprime un mensaje de que obtuvimos una coneccion.
         inet_ntop(info_addr.ss_family, get_in_addr((struct sockaddr*)&info_addr), s, sizeof s);
-        printf("%sServidor Web: Se obtuvo conexion de %s.\n", KMAG , s);
+        printf("%s\nStratus WebServer: Got connection from %s.\n", KMAG , s);
 
         handle_solicitud_http(newfd, cache, conn);
         close(newfd);
