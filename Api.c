@@ -1,5 +1,6 @@
 #include "Api.h"
 #include <string.h>
+#include <stdio.h>
 
 void get(int fd, char* query, MYSQL* conn, int(*f)(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido, char* flags));
 
@@ -27,9 +28,9 @@ void get(int fd, char* query, MYSQL* conn, int(*f)(int fd, char* cabeza, char* t
     }
         
     length += snprintf(body+length, sizeof(body), "[");
-    while(row = mysql_fetch_row(res)){
+    while((row = mysql_fetch_row(res))){
         length += snprintf(body+length, sizeof(body), "{");
-        for(int i = 0; i < num_fields; i++){
+        for(unsigned int i = 0; i < num_fields; i++){
             if(IS_NUM(fields[i]->type))
                 length += snprintf(body+length, sizeof(body),"\"%s\":%s,", fields[i]->name, row[i]);
             else
