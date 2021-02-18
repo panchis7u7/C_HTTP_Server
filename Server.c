@@ -33,7 +33,7 @@
 #define KWHT  "\x1B[37m"
 
 //Prototipo de funciones.
-int enviar_respuesta(int, char*, char*, void*, unsigned long long, char*);
+int sendResponse(int, char*, char*, void*, unsigned long long, char*);
 void resp_404(int);
 void get_d20(int);
 void get_fecha(int);
@@ -67,20 +67,20 @@ char* cleanHttp(char* str){
  * Return the value from the send() function.
  */
 
-int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido, char* flags){
-    const int tamano_respuesta_maxima = 65536 + tamano_contenido;
+int sendResponse(int fd, char* cabeza, char* contentType, void* body, unsigned long long contentLen, char* flags){
+    const int maxResponseLen = 65536 + contentLen;
     //const int tamano_respuesta_maxima = 262144;
-    char* respuesta = (char*)malloc(tamano_respuesta_maxima*sizeof(char));
+    char* response = (char*)malloc(maxResponseLen*sizeof(char));
     //char respuesta[tamano_respuesta_maxima];
     char buffer[100];
 
-    time_t tiempo;
+    time_t currentTime;
     struct tm* info;
-    time(&tiempo);
-    info = localtime(&tiempo);
+    time(&currentTime);
+    info = localtime(&currentTime);
     strftime(buffer, 100, "%a %b %d %T %Z %Y", info);
 
-    int tamano_respuesta = snprintf(respuesta, tamano_respuesta_maxima,
+    int responseLen = snprintf(response, maxResponseLen,
                                     "%s\n"
                                     "Access-Control-Allow-Origin: *\n"
                                     "%s"
@@ -89,16 +89,16 @@ int enviar_respuesta(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, u
                                     "Content-Length: %llu\n"
                                     "Content-Type: %s\n"
                                     "\n",
-                                    cabeza, flags, buffer, tamano_contenido, tipo_contenido);
-    memcpy(respuesta + tamano_respuesta, cuerpo, tamano_contenido);
-    tamano_respuesta += tamano_contenido;
+                                    cabeza, flags, buffer, contentLen, contentType);
+    memcpy(response + responseLen, body, contentLen);
+    responseLen += contentLen;
     //Mandalo todo!. Guachar
-    int rv = send(fd, respuesta, tamano_respuesta, 0);
+    int rv = send(fd, response, responseLen, 0);
     if(rv < 0){
         perror("send");
         return -1;
     }
-    free(respuesta);
+    free(response);
     return rv;
 }
 
@@ -121,7 +121,7 @@ void resp_404(int fd){
     }
 
     tipo_mime = obtener_tipo_mime(ruta_archivo);
-    enviar_respuesta(fd, "HTTP/1.1 404 NOT FOUND", tipo_mime, datos_archivo->data, datos_archivo->tamano, "");
+    sendResponse(fd, "HTTP/1.1 404 NOT FOUND", tipo_mime, datos_archivo->data, datos_archivo->tamano, "");
     liberar_archivo(datos_archivo);
 }
 
@@ -135,7 +135,7 @@ void get_d20(int fd){
         char str[8];
         int random = (rand() % (20 -1 + 1) + 1);
         int tamano = sprintf(str, "%d", random);
-        enviar_respuesta(fd, "HTTP/1.1 200 OK", "text/plain", str, tamano, "");
+        sendResponse(fd, "HTTP/1.1 200 OK", "text/plain", str, tamano, "");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,7 +148,7 @@ void get_d20(int fd){
     char current[26]; // gmtime documentation stated that a user-supplied buffer.
                       // should have at least 26 bytes.
     int length = sprintf(current, "%s", asctime(gmtime(&gmt_format)));
-    enviar_respuesta(fd, "HTTP/1.1 200 OK", "text/plain", current, length, "");
+    sendResponse(fd, "HTTP/1.1 200 OK", "text/plain", current, length, "");
  }
 
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -170,7 +170,7 @@ void get_d20(int fd){
 
      char cuerpo_respuesta[128];
      int tamano = sprintf(cuerpo_respuesta, "{\"status\": \"%s\"}\n", status);
-     enviar_respuesta(fd, "HTTP/1.1 200 OK", "application/json", cuerpo_respuesta, tamano, "");
+     sendResponse(fd, "HTTP/1.1 200 OK", "application/json", cuerpo_respuesta, tamano, "");
     //Guardar el cuerpo y enviar respuesta.
  }
 
@@ -190,7 +190,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
     cacheent = get_cache(cache, ruta_abs);
     if(cacheent){
         printf(" => Cache.\n");
-        enviar_respuesta(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido, "");
+        sendResponse(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido, "");
         return;
     } else {
         datos_archivo = cargar_archivo(ruta_abs);
@@ -206,7 +206,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
         }
         printf(" => Archivo.\n");
         tipo_mime = obtener_tipo_mime(ruta_abs);
-        enviar_respuesta(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano, "");
+        sendResponse(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano, "");
         //printf("\nruta-abs: %s\n", ruta_abs);
         put_cache(cache, ruta_abs, tipo_mime, datos_archivo->data, datos_archivo->tamano);
         liberar_archivo(datos_archivo);
@@ -261,11 +261,11 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
     
     if(strcmp(tipo_solicitud, "GET") == 0){
         if(strcmp(obtener_tipo_mime(ruta_solicitud), "application/octet-stream") == 0)
-            handleGetApi(fd, ruta_solicitud, conn, enviar_respuesta);
+            handleGetApi(fd, ruta_solicitud, conn, sendResponse);
         else
             obtener_archivo(fd, cache, cleanHttp(ruta_solicitud));
     } else if(strcmp(tipo_solicitud, "OPTIONS") == 0){
-        enviar_respuesta(fd, "HTTP/1.1 200 OK", "application/json", "", 0, CORS);
+        sendResponse(fd, "HTTP/1.1 200 OK", "application/json", "", 0, CORS);
     }
     return;
  }
