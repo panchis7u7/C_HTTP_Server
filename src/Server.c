@@ -21,8 +21,8 @@
 #include <unistd.h>
 
 #define PUERTO "3490"
-#define ARCHIVOS_SERVIDOR "./serverfiles"
-#define ROOT_SERVIDOR "./serverroot"
+#define ARCHIVOS_SERVIDOR "../serverfiles"
+#define ROOT_SERVIDOR "../serverroot"
 #define KNRM  "\x1B[0m"
 #define KRED  "\x1B[31m"
 #define KGRN  "\x1B[32m"
