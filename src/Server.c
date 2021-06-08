@@ -19,10 +19,13 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #define PUERTO "3490"
 #define ARCHIVOS_SERVIDOR "../serverfiles"
 #define ROOT_SERVIDOR "../serverroot"
+#define THREADPOOL_SIZE 20
+
 #define KNRM  "\x1B[0m"
 #define KRED  "\x1B[31m"
 #define KGRN  "\x1B[32m"
@@ -40,9 +43,11 @@ void get_fecha(int);
 void post_guardado(int, char*);
 void obtener_archivo(int, struct cache*, char*);
 void handle_solicitud_http(int, struct cache*, MYSQL*); 
+void* threadFunc();
 
 int listenfd = 0;
 char* CORS = "Access-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE\r\n";
+pthread_t thread_pool[THREADPOOL_SIZE];
 
 char* cleanHttp(char* str){
     char* index;
@@ -275,9 +280,16 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
  //Gracefully quit the program.
  void signalHandler(){
-     write(STDOUT_FILENO, "\n\x1B[31mQuitting...\n", 19);
+     write(STDOUT_FILENO, "\n\x1B[31mQuitting...\n\x1B[37m", 23);
      close(listenfd);
      exit(0);
+ }
+
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+ void* threadFunc(){
+     return NULL;
  }
 
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -296,7 +308,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      }
 
      printf("%s-----------------------------------------------------------\n", KGRN);
-     printf("%s | Created by: Carlos Sebastian Madrigal Rodriguez. |\n", KGRN);
+     printf("%s   | Created by: Carlos Sebastian Madrigal Rodriguez. |\n", KGRN);
      printf("%s-----------------------------------------------------------\n\n", KGRN);
 
      struct sigaction sa;
@@ -305,6 +317,10 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      //handle ^C quitting and Seg faults.
      sigaction(SIGINT, &sa,NULL);
      sigaction(SIGSEGV, &sa, NULL);
+
+    for(int i = 0; i < THREADPOOL_SIZE; i++){
+        pthread_create(&(thread_pool[i]), NULL, threadFunc, NULL);
+    }
 
     struct cache* cache = crear_cache(20, 0);
 

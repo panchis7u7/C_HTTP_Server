@@ -1,12 +1,12 @@
 #ifndef _QUEUE_H_
 #define _QUEUE_H
 
-typedef struct node_cola {
-    struct node_cola* sig;
+typedef struct NodeQueue {
+    struct NodeQueue* sig;
     int* socket_cliente;
-}node_cola;
+}NodeQueue;
 
-void ins_queue(int*);
-int* del_queue();
+void insertQueue(int*);
+int* removeQueue();
 
 #endif  //_QUEUE_H_

@@ -1,30 +1,26 @@
 #include "Queue.h"
 #include <stdlib.h>
 
-node_cola* cabeza = NULL;
-node_cola* cola = NULL;
+NodeQueue* head = NULL;
+NodeQueue* tail = NULL;
 
-void ins_queue(int* sock){
-    node_cola* nuevo = malloc(sizeof(node_cola));
+void insertQueue(int* sock){
+    NodeQueue* nuevo = malloc(sizeof(NodeQueue));
     nuevo->socket_cliente = sock;
     nuevo->sig = NULL;
-    if(cola == NULL){
-        cabeza = nuevo;
-    } else {
-        cola->sig = nuevo;
-    }
-    cola = nuevo;
+    if(tail == NULL){
+        head = nuevo;
+    } else {tail->sig = nuevo;}
+    tail = nuevo;
 }
 
-int* del_queue(){
-    if(cabeza == NULL){
+int* removeQueue(){
+    if(head == NULL){
         return NULL;
     } else {
-        int* resultado = cabeza->socket_cliente;
-        node_cola* tmp = cabeza;
-        if (cabeza == NULL) {
-            cola = NULL;
-        }
+        int* resultado = head->socket_cliente;
+        NodeQueue* tmp = head;
+        if (head == NULL) { tail = NULL; }
         free(tmp);
         return resultado;
     }
