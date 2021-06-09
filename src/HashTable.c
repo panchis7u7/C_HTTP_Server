@@ -4,17 +4,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define TAMANO_DEFAULT 128
-#define FACTOR_CRECIMIENTO_DEFAULT 2
+#define DEFAULT_SIZE 128
+#define DEFAULT_GROW_FACTOR 2
 
-//Prototipos de Funcion.
-/*
+//Function prototype.
 int htcmp(void*, void*);
-int htcmp2(void*, void*);
-void anadir_cuenta_entrada(hashtable*, int);
-void foreach_callback(void*, void*);
-void liberar_htent(void*, void*);
-int hashfn_predeterminada(void*, int, int);*/
+void addEntryCount(HashTable*, int);
+void forEachCallback(void*, void*);
+void freeHtent(void*, void*);
+int defaultHashFunction(void*, int, int);
 
 //Entrada de una tabla hash.
 struct htent {
@@ -31,7 +29,7 @@ typedef struct forEachListPayload {
 } forEachListPayload;
 
 //Cambia la cuenta de entrada y mantener las metricas de cargas.
-void addEntryCount(struct hashtable* ht, int d){
+void addEntryCount(HashTable* ht, int d){
     ht->entryCount += d;
     ht->payLoad = (float)ht->entryCount / ht->size;
 }
@@ -48,15 +46,15 @@ unsigned long long defaultHashFuntion(void* data, unsigned long long dataSize, i
     return h;
 }
 
-struct hashtable* createHash(int size, unsigned long long (*hashfn)(void*, unsigned long long, int)){
+HashTable* createHash(int size, unsigned long long (*hashfn)(void*, unsigned long long, int)){
     if(size < 1){
-        size = TAMANO_DEFAULT;
+        size = DEFAULT_SIZE;
     }
     if(hashfn == NULL){
         hashfn = defaultHashFuntion;
     }
 
-    struct hashtable* ht = (struct hashtable*)malloc(sizeof *ht);
+    HashTable* ht = (HashTable*)malloc(sizeof *ht);
 
     if(ht == NULL)
         return NULL;
@@ -80,7 +78,7 @@ void freeHtent(void* htent, void* arg){
 }
 
 //Destruir tabla hash.
-void destroyHash(struct hashtable* ht){
+void destroyHash(HashTable* ht){
     for(int i = 0; i < ht->size; i++){
         struct Lista*  lista = ht->bucket[i];
         foreach_lista(lista, freeHtent, NULL);
@@ -90,12 +88,12 @@ void destroyHash(struct hashtable* ht){
 }
 
 //Insertar en la tabla hash con una llave tipo cadena (string).
-void* putHash(struct hashtable* ht, char* key, void* data){
+void* putHash(HashTable* ht, char* key, void* data){
     return putHashBin(ht, key, strlen(key), data);
 }
 
 //Insertar en la tabla hash con una llave binaria.
-void* putHashBin(struct hashtable* ht, void* key, int keySize, void* data){
+void* putHashBin(HashTable* ht, void* key, int keySize, void* data){
     //printf("Put Hash => %s.\n", (char*)llave);
     int index = ht->hashfn(key, keySize, ht->size);
     struct Lista* list = ht->bucket[index];
@@ -125,12 +123,12 @@ int htcmp(void* a, void* b){
 }
 
 //Obtener valor de la tabla hash con una llave tipo cadena (string).
-void* getHash(struct hashtable* ht, char* key){
+void* getHash(HashTable* ht, char* key){
     return getHashBin(ht, key, strlen(key));
 }
 
 //Obtener valor de la tabla hash con una llave binaria.
-void* getHashBin(struct hashtable* ht, void* key, int keySize){
+void* getHashBin(HashTable* ht, void* key, int keySize){
     //printf("Get Hash => %s.\n", (char*)llave);
     int indice = ht->hashfn(key, keySize, ht->size);
     struct Lista* lista = ht->bucket[indice];
@@ -144,23 +142,13 @@ void* getHashBin(struct hashtable* ht, void* key, int keySize){
     return tmp->data;
 }
 
-
-//Funcion de comparacion entre llaves.
-/* int htcmp2(void* a, void* b){
-    struct htent* entA = a, *entB = b;
-    if(*((char*)(entA->llave)) == *((char*)(entB->llave))){
-        return 1;
-    }
-    return 0;
-} */
-
 //Borrar valor de la tabla hash con una llave tipo cadena (string).
-void* deleteHash(struct hashtable* ht, char* key){
+void* deleteHash(HashTable* ht, char* key){
     return deleteHashBin(ht, key, strlen(key));
 }
 
 //Borrar valor de la tabla hash con una llave Binaria.
-void* deleteHashBin(struct hashtable* ht, void* key, int keySize){
+void* deleteHashBin(HashTable* ht, void* key, int keySize){
     int index = ht->hashfn(key, keySize, ht->size);
     struct Lista* lista = ht->bucket[index];
     struct htent cmpent;
@@ -184,7 +172,7 @@ void forEachCallback(void* vent, void* v_carga_util){
 }
 
 //Para cada elemento en la tabla hash.
-void forEach(struct hashtable* ht, void(*f)(void*, void*), void* arg){
+void forEach(HashTable* ht, void(*f)(void*, void*), void* arg){
     forEachListPayload carga_util;
     carga_util.f = f;
     carga_util.arg = arg;
