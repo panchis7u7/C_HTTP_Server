@@ -1,5 +1,5 @@
 #include "HashTable.h"
-#include "ListaEnlazada.h"
+#include "LinkedList.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -62,11 +62,11 @@ HashTable* createHash(int size, unsigned long long (*hashfn)(void*, unsigned lon
     ht->size = size;
     ht->entryCount = 0;
     ht->payLoad = 0;
-    ht->bucket = (struct Lista**)malloc(size * sizeof(struct Lista*));
+    ht->bucket = (List**)malloc(size * sizeof(List*));
     ht->hashfn = hashfn;
 
     for(int i = 0; i < size; i++){
-        ht->bucket[i] = crear_lista();
+        ht->bucket[i] = createList();
     }
     return ht;
 }
@@ -80,9 +80,9 @@ void freeHtent(void* htent, void* arg){
 //Destruir tabla hash.
 void destroyHash(HashTable* ht){
     for(int i = 0; i < ht->size; i++){
-        struct Lista*  lista = ht->bucket[i];
-        foreach_lista(lista, freeHtent, NULL);
-        destruir_lista(lista);
+        List* list = ht->bucket[i];
+        forEachList(list, freeHtent, NULL);
+        destroyList(list);
     }
     free(ht);
 }
@@ -96,14 +96,14 @@ void* putHash(HashTable* ht, char* key, void* data){
 void* putHashBin(HashTable* ht, void* key, int keySize, void* data){
     //printf("Put Hash => %s.\n", (char*)llave);
     int index = ht->hashfn(key, keySize, ht->size);
-    struct Lista* list = ht->bucket[index];
+    List* list = ht->bucket[index];
     struct htent* ent = (struct htent*)malloc(sizeof *ent);
     ent->key = malloc(keySize);
     memcpy(ent->key, key, keySize);
     ent->keySize = keySize;
     ent->hashKey = index;
     ent->data = data;
-    if(insertar_final_lista(list, ent) == NULL){
+    if(insertListEnd(list, ent) == NULL){
         free(ent->key);
         free(ent);
         return NULL;
@@ -131,11 +131,11 @@ void* getHash(HashTable* ht, char* key){
 void* getHashBin(HashTable* ht, void* key, int keySize){
     //printf("Get Hash => %s.\n", (char*)llave);
     int indice = ht->hashfn(key, keySize, ht->size);
-    struct Lista* lista = ht->bucket[indice];
+    List* list = ht->bucket[indice];
     struct htent cmpent;
     cmpent.key = key;
     cmpent.keySize = keySize;
-    struct htent *tmp = encontrar_lista(lista, &cmpent, htcmp);
+    struct htent *tmp = findList(list, &cmpent, htcmp);
     if(tmp == NULL) {
         return NULL;
     }
@@ -150,11 +150,11 @@ void* deleteHash(HashTable* ht, char* key){
 //Borrar valor de la tabla hash con una llave Binaria.
 void* deleteHashBin(HashTable* ht, void* key, int keySize){
     int index = ht->hashfn(key, keySize, ht->size);
-    struct Lista* lista = ht->bucket[index];
+    List* list = ht->bucket[index];
     struct htent cmpent;
     cmpent.key = key;
     cmpent.keySize = keySize;
-    struct htent* ent = eliminar_lista(lista, &cmpent, htcmp);
+    struct htent* ent = deleteList(list, &cmpent, htcmp);
     if(ent == NULL){
         return NULL;
     }    
@@ -172,14 +172,14 @@ void forEachCallback(void* vent, void* v_carga_util){
 }
 
 //Para cada elemento en la tabla hash.
-void forEach(HashTable* ht, void(*f)(void*, void*), void* arg){
+void forEachHash(HashTable* ht, void(*f)(void*, void*), void* arg){
     forEachListPayload carga_util;
     carga_util.f = f;
     carga_util.arg = arg;
     for (int i = 0; i < ht->size; i++)
     {
-        struct Lista* lista = ht->bucket[i];    
-        foreach_lista(lista, forEachCallback, &carga_util);
+        List* list = ht->bucket[i];    
+        forEachList(list, forEachCallback, &carga_util);
     }
     
 }

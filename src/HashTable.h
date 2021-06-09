@@ -5,7 +5,7 @@ typedef struct HashTable {
     int size;             //Solo lectura.
     int entryCount;    //Solo lectura.
     float payLoad;            //Solo lectura. ->Numero de llaves almacenadas en la tabla, dividida por la capacidad.
-    struct Lista** bucket; 
+    struct List** bucket; 
     unsigned long long (*hashfn)(void* data, unsigned long long dataSize, int bucketcount);
 } HashTable;
 
@@ -17,6 +17,6 @@ extern void* getHash(HashTable* ht, char* key);
 extern void* getHashBin(HashTable* ht, void* key, int keySize);
 extern void* deleteHash(HashTable* ht, char* key);
 extern void* deleteHashBin(HashTable* ht, void* key, int keySize);
-extern void forEach(HashTable* ht, void (*f)(void*, void*), void* arg);
+extern void forEachHash(HashTable* ht, void (*f)(void*, void*), void* arg);
 
 #endif // !_HASHTABLE_H_
