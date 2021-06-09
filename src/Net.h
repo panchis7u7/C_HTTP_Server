@@ -3,6 +3,6 @@
 
 struct sockaddr;
 void* get_in_addr(struct sockaddr* sa);
-int obtener_socket_oyente(char* puerto);
+int getListeningSocket(char* puerto);
 
 #endif //!_NET_C_

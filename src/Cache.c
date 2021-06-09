@@ -1,5 +1,5 @@
 #include "Cache.h"
-#include "TablaHash.h"
+#include "HashTable.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -92,7 +92,7 @@ struct cache* crear_cache(int tamano_maximo, int tamano_hash){
     if(cache == NULL){
         return NULL;
     }
-    cache->indice = crear_hash(tamano_hash, NULL);  //NULL -> funcion hash predeterminada.
+    cache->indice = createHash(tamano_hash, NULL);  //NULL -> funcion hash predeterminada.
     cache->cabeza = cache->cola = NULL;
     cache->tamano_maximo = tamano_maximo;
     cache->tamano_actual = 0;
@@ -102,7 +102,7 @@ struct cache* crear_cache(int tamano_maximo, int tamano_hash){
 //Liberar memoira de la cache.
 void liberar_cache(struct cache* cache){
     struct entrada_cache* entrada_actual = cache->cabeza;
-    destruir_hash(cache->indice);
+    destroyHash(cache->indice);
     while(entrada_actual != NULL){
         struct entrada_cache* sig_entrada = entrada_actual->sig;
         liberar_entrada(entrada_actual);
@@ -116,11 +116,11 @@ void put_cache(struct cache* cache, char* ruta, char* tipo_contenido, void* cont
     //printf("\nPut cache: %s\n", ruta);
     struct entrada_cache* ec = asignar_entrada(ruta, tipo_contenido, contenido, tamano_contenido);
     insertar_ec_lista(cache, ec);
-    put_hash(cache->indice, ruta, ec);
+    putHash(cache->indice, ruta, ec);
     cache->tamano_actual++;
     if(cache->tamano_actual > cache->tamano_maximo){
         struct entrada_cache* cola_antigua = remover_cola_lista(cache);
-        eliminar_hash(cache->indice, cola_antigua->ruta);
+        deleteHash(cache->indice, cola_antigua->ruta);
         liberar_entrada(cola_antigua);
         printf("Tamano actual: %d, Deberia de ser: %d\n", cache->tamano_actual, cache->tamano_maximo - 1);
     }
@@ -130,7 +130,7 @@ void put_cache(struct cache* cache, char* ruta, char* tipo_contenido, void* cont
 struct entrada_cache* get_cache(struct cache* cache, char* ruta){
     //printf("\nGet cache: %s.\n", ruta);
     //printf("\n%s", ruta);
-    struct entrada_cache* ec = get_hash(cache->indice, ruta);
+    struct entrada_cache* ec = getHash(cache->indice, ruta);
     if(ec == NULL){
         return NULL;
     }

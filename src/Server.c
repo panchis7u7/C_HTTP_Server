@@ -222,16 +222,16 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  //Buscar el comienzo del cuerpo del paquete HTTP.
- char* encontrar_inicio_cuerpo(char* cabezilla){
-     char* inicio;
-     if((inicio = strstr(cabezilla, "\r\n\r\n")) != NULL) {
-         return inicio + 2;
-     } else if ((inicio = strstr(cabezilla, "\n\n")) != NULL) {
-         return inicio + 2;
-     } else if((inicio = strstr(cabezilla, "\r\r")) != NULL){
-         return inicio + 2;
+ char* encontrar_inicio_cuerpo(char* header){
+     char* begin;
+     if((begin = strstr(header, "\r\n\r\n")) != NULL) {
+         return begin + 2;
+     } else if ((begin = strstr(header, "\n\n")) != NULL) {
+         return begin + 2;
+     } else if((begin = strstr(header, "\r\r")) != NULL){
+         return begin + 2;
      } else {
-         return inicio; 
+         return begin; 
      } 
  }
 
@@ -240,7 +240,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  //Encargarse de la solicitud HTTP y mandar respuesta.
- void handle_solicitud_http(int fd, struct cache* cache, MYSQL* conn){
+ void handleHttpRequest(int fd, struct cache* cache, MYSQL* conn){
      const int tamano_buffer_solicitud = 65536;
      char solicitud[tamano_buffer_solicitud];
      char tipo_solicitud[8]; //Get o Post.
@@ -300,7 +300,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      char s[INET6_ADDRSTRLEN];
 
      //Obtener un socket oyente.
-     listenfd = obtener_socket_oyente(PUERTO);
+     listenfd = getListeningSocket(PUERTO);
 
      if (listenfd < 0) {
          fprintf(stderr, "\n%sStratus WebServer: Fatal error at opening listening socket.\n", KRED);
@@ -355,7 +355,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
         inet_ntop(info_addr.ss_family, get_in_addr((struct sockaddr*)&info_addr), s, sizeof s);
         printf("%s\nStratus WebServer: Got connection from %s.\n", KMAG , s);
 
-        handle_solicitud_http(newfd, cache, conn);
+        handleHttpRequest(newfd, cache, conn);
         close(newfd);
     }
  return 0;
