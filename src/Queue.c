@@ -6,11 +6,11 @@ NodeQueue* tail = NULL;
 
 void insertQueue(int* sock){
     NodeQueue* nuevo = malloc(sizeof(NodeQueue));
-    nuevo->socket_cliente = sock;
-    nuevo->sig = NULL;
+    nuevo->clientSocket = sock;
+    nuevo->next = NULL;
     if(tail == NULL){
         head = nuevo;
-    } else {tail->sig = nuevo;}
+    } else {tail->next = nuevo;}
     tail = nuevo;
 }
 
@@ -18,8 +18,9 @@ int* removeQueue(){
     if(head == NULL){
         return NULL;
     } else {
-        int* resultado = head->socket_cliente;
+        int* resultado = head->clientSocket;
         NodeQueue* tmp = head;
+        head = head->next;
         if (head == NULL) { tail = NULL; }
         free(tmp);
         return resultado;

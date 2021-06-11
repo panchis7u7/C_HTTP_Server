@@ -38,6 +38,7 @@ void* insertListEnd(List* list, void* data){
     if(list->root == NULL){
         return insertList(list, data);
     }
+    
     Node* new = (Node*)calloc(1, sizeof *new);
     if(new == NULL){
         return NULL;

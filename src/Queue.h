@@ -2,8 +2,8 @@
 #define _QUEUE_H
 
 typedef struct NodeQueue {
-    struct NodeQueue* sig;
-    int* socket_cliente;
+    struct NodeQueue* next;
+    int* clientSocket;
 }NodeQueue;
 
 void insertQueue(int*);

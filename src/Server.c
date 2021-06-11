@@ -4,6 +4,7 @@
 #include "Net.h"
 #include "Mysql.h"
 #include "Api.h"
+#include "Queue.h"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -47,7 +48,6 @@ void* threadFunc();
 
 int listenfd = 0;
 char* CORS = "Access-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE\r\n";
-pthread_t thread_pool[THREADPOOL_SIZE];
 
 char* cleanHttp(char* str){
     char* index;
@@ -287,11 +287,6 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
- void* threadFunc(){
-     return NULL;
- }
-
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  int main(void){
@@ -318,10 +313,6 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      sigaction(SIGINT, &sa,NULL);
      sigaction(SIGSEGV, &sa, NULL);
 
-    for(int i = 0; i < THREADPOOL_SIZE; i++){
-        pthread_create(&(thread_pool[i]), NULL, threadFunc, NULL);
-    }
-
     struct cache* cache = crear_cache(20, 0);
 
      MYSQL* conn;
@@ -337,7 +328,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      };
 
      conn = mysql_connect(&conn_data);
-     
+
      printf("%sStratus WebServer: Waiting for new conections on port %s...\n", KBLU, PUERTO);
 
      //Bucle principal que acepta conecciones entrantes.
