@@ -36,6 +36,11 @@
 #define KCYN  "\x1B[36m"
 #define KWHT  "\x1B[37m"
 
+struct args {
+    struct cache* cache;
+    MYSQL* conn;
+};
+
 //Prototipo de funciones.
 int sendResponse(int, char*, char*, void*, unsigned long long, char*);
 void resp_404(int);
@@ -43,11 +48,14 @@ void get_d20(int);
 void get_fecha(int);
 void post_guardado(int, char*);
 void obtener_archivo(int, struct cache*, char*);
-void handle_solicitud_http(int, struct cache*, MYSQL*); 
+void handleHttpRequest(int fd, struct cache* cache, MYSQL* conn);
 void* threadFunc();
 
 int listenfd = 0;
 char* CORS = "Access-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE\r\n";
+pthread_t threadPool[THREADPOOL_SIZE];
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t conditioVariable = PTHREAD_COND_INITIALIZER;
 
 char* cleanHttp(char* str){
     char* index;
@@ -239,6 +247,25 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+ void* threadFunc(void* args){
+     struct args* data = (struct args*)args;
+     int* clientSocket = NULL;
+     while (1)
+     {   pthread_mutex_lock(&mutex);
+         pthread_cond_wait(&conditioVariable, &mutex);
+         clientSocket = removeQueue();
+         pthread_mutex_unlock(&mutex);
+         if(clientSocket != NULL){
+            handleHttpRequest(*clientSocket, data->cache, data->conn);
+            close(*clientSocket);
+         }
+     }
+ }
+
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
  //Encargarse de la solicitud HTTP y mandar respuesta.
  void handleHttpRequest(int fd, struct cache* cache, MYSQL* conn){
      const int tamano_buffer_solicitud = 65536;
@@ -293,6 +320,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      int newfd; //Escucha en sock_fd, nueva coneccion en newfd.
      struct sockaddr_storage info_addr;
      char s[INET6_ADDRSTRLEN];
+     int i;
 
      //Obtener un socket oyente.
      listenfd = getListeningSocket(PUERTO);
@@ -328,8 +356,17 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      };
 
      conn = mysql_connect(&conn_data);
+     struct args* args = (struct args*)malloc(sizeof(struct args));
+     args->cache = cache;
+     args->conn = conn;
 
      printf("%sStratus WebServer: Waiting for new conections on port %s...\n", KBLU, PUERTO);
+
+     for(i = 0; i < THREADPOOL_SIZE; ++i){
+         if(pthread_create(&threadPool[i], NULL, threadFunc, args) != 0){
+             perror("Failed to create thread\n");
+         }
+     }
 
      //Bucle principal que acepta conecciones entrantes.
 
@@ -346,10 +383,22 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
         inet_ntop(info_addr.ss_family, get_in_addr((struct sockaddr*)&info_addr), s, sizeof s);
         printf("%s\nStratus WebServer: Got connection from %s.\n", KMAG , s);
 
-        handleHttpRequest(newfd, cache, conn);
-        close(newfd);
+        int* clientSocket = (int*)malloc(sizeof(int));
+        *clientSocket = newfd;
+
+        pthread_mutex_lock(&mutex);
+        insertQueue(clientSocket);
+        pthread_cond_signal(&conditioVariable);
+        pthread_mutex_unlock(&mutex);
     }
- return 0;
+
+    for(int i = 0; i < THREADPOOL_SIZE; ++i){
+         if(pthread_join(threadPool[i], NULL) != 0){
+             perror("Failed to join thread\n");
+         }
+     }
+
+    return 0;
  }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
