@@ -347,8 +347,8 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
      MYSQL_CONN conn_data = {
          .host = "localhost",
-         .user = "root",
-         .password = "password",
+         .user = "panchis",
+         .password = "pass",
          .dbname = "Estudiantes",
          .sock = NULL,
          .port = 3306,

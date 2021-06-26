@@ -1,6 +1,8 @@
 #ifndef _CACHE_H_
 #define _CACHE_H_
 
+#include "HashTable.h"
+
 //Entrada individual a cache.
 struct entrada_cache {
     char* ruta;     //Punto final, llave al cache.
@@ -11,7 +13,7 @@ struct entrada_cache {
 };//entrada_cache;
 
 struct cache {
-    struct hashtable* indice;
+    HashTable* indice;
     struct entrada_cache* cabeza, *cola;  //Lista enlazada doble.
     int tamano_maximo;
     int tamano_actual;
