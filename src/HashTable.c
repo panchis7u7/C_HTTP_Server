@@ -9,10 +9,10 @@
 
 //Function prototype.
 int htcmp(void*, void*);
-void addEntryCount(HashTable*, int);
-void forEachCallback(void*, void*);
-void freeHtent(void*, void*);
-int defaultHashFunction(void*, int, int);
+void add_entry_count(HashTable*, int);
+void for_each_callback(void*, void*);
+void free_htent(void*, void*);
+unsigned long long default_hash_function(void*, unsigned long long, int);
 
 //Entrada de una tabla hash.
 struct htent {
@@ -29,13 +29,13 @@ typedef struct forEachListPayload {
 } forEachListPayload;
 
 //Cambia la cuenta de entrada y mantener las metricas de cargas.
-void addEntryCount(HashTable* ht, int d){
+void add_entry_count(HashTable* ht, int d){
     ht->entryCount += d;
     ht->payLoad = (float)ht->entryCount / ht->size;
 }
 
 //Funcion Hash Modular (Predeterminada).
-unsigned long long defaultHashFuntion(void* data, unsigned long long dataSize, int bucketCount){
+unsigned long long default_hash_function(void* data, unsigned long long dataSize, int bucketCount){
     const unsigned long long R = 31; //Numero primo.
     unsigned long long h = 0;
     unsigned char *p = data;
@@ -46,12 +46,12 @@ unsigned long long defaultHashFuntion(void* data, unsigned long long dataSize, i
     return h;
 }
 
-HashTable* createHash(int size, unsigned long long (*hashfn)(void*, unsigned long long, int)){
+HashTable* create_hash(int size, unsigned long long (*hashfn)(void*, unsigned long long, int)){
     if(size < 1){
         size = DEFAULT_SIZE;
     }
     if(hashfn == NULL){
-        hashfn = defaultHashFuntion;
+        hashfn = default_hash_function;
     }
 
     HashTable* ht = (HashTable*)malloc(sizeof *ht);
@@ -72,28 +72,28 @@ HashTable* createHash(int size, unsigned long long (*hashfn)(void*, unsigned lon
 }
 
 //Liberar htent.
-void freeHtent(void* htent, void* arg){
+void free_htent(void* htent, void* arg){
     (void)arg;
     free(htent);
 }
 
 //Destruir tabla hash.
-void destroyHash(HashTable* ht){
+void destroy_hash(HashTable* ht){
     for(int i = 0; i < ht->size; i++){
         List* list = ht->bucket[i];
-        forEachList(list, freeHtent, NULL);
+        forEachList(list, free_htent, NULL);
         destroyList(list);
     }
     free(ht);
 }
 
 //Insertar en la tabla hash con una llave tipo cadena (string).
-void* putHash(HashTable* ht, char* key, void* data){
-    return putHashBin(ht, key, strlen(key), data);
+void* put_hash(HashTable* ht, char* key, void* data){
+    return put_hash_bin(ht, key, strlen(key), data);
 }
 
 //Insertar en la tabla hash con una llave binaria.
-void* putHashBin(HashTable* ht, void* key, int keySize, void* data){
+void* put_hash_bin(HashTable* ht, void* key, int keySize, void* data){
     //printf("Put Hash => %s.\n", (char*)llave);
     int index = ht->hashfn(key, keySize, ht->size);
     List* list = ht->bucket[index];
@@ -108,7 +108,7 @@ void* putHashBin(HashTable* ht, void* key, int keySize, void* data){
         free(ent);
         return NULL;
     }
-    addEntryCount(ht, +1);
+    add_entry_count(ht, +1);
     return data;
 }
 
@@ -123,12 +123,12 @@ int htcmp(void* a, void* b){
 }
 
 //Obtener valor de la tabla hash con una llave tipo cadena (string).
-void* getHash(HashTable* ht, char* key){
-    return getHashBin(ht, key, strlen(key));
+void* get_hash(HashTable* ht, char* key){
+    return get_hash_bin(ht, key, strlen(key));
 }
 
 //Obtener valor de la tabla hash con una llave binaria.
-void* getHashBin(HashTable* ht, void* key, int keySize){
+void* get_hash_bin(HashTable* ht, void* key, int keySize){
     //printf("Get Hash => %s.\n", (char*)llave);
     int indice = ht->hashfn(key, keySize, ht->size);
     List* list = ht->bucket[indice];
@@ -143,12 +143,12 @@ void* getHashBin(HashTable* ht, void* key, int keySize){
 }
 
 //Borrar valor de la tabla hash con una llave tipo cadena (string).
-void* deleteHash(HashTable* ht, char* key){
-    return deleteHashBin(ht, key, strlen(key));
+void* delete_hash(HashTable* ht, char* key){
+    return delete_hash_bin(ht, key, strlen(key));
 }
 
 //Borrar valor de la tabla hash con una llave Binaria.
-void* deleteHashBin(HashTable* ht, void* key, int keySize){
+void* delete_hash_bin(HashTable* ht, void* key, int keySize){
     int index = ht->hashfn(key, keySize, ht->size);
     List* list = ht->bucket[index];
     struct htent cmpent;
@@ -160,26 +160,26 @@ void* deleteHashBin(HashTable* ht, void* key, int keySize){
     }    
     void* dato = ent->data;
     free(ent);
-    addEntryCount(ht, -1);
+    add_entry_count(ht, -1);
     return dato;
 }
 
 //Funcion de llamada de vuelta (callback) para cada elemento (Foreach).
-void forEachCallback(void* vent, void* v_carga_util){
+void for_each_callback(void* vent, void* v_carga_util){
     struct htent* ent = vent;
     struct forEachListPayload* carga_util = v_carga_util;
     carga_util->f(ent->data, carga_util->arg);
 }
 
 //Para cada elemento en la tabla hash.
-void forEachHash(HashTable* ht, void(*f)(void*, void*), void* arg){
+void for_each_hash(HashTable* ht, void(*f)(void*, void*), void* arg){
     forEachListPayload carga_util;
     carga_util.f = f;
     carga_util.arg = arg;
     for (int i = 0; i < ht->size; i++)
     {
         List* list = ht->bucket[i];    
-        forEachList(list, forEachCallback, &carga_util);
+        forEachList(list, for_each_callback, &carga_util);
     }
     
 }

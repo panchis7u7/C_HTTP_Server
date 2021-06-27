@@ -11,7 +11,7 @@ typedef struct request_info {
 } request_info;
 
 struct args {
-    struct cache* cache;
+    Cache* cache;
     MYSQL* conn;
     request_info* request_info;
 };

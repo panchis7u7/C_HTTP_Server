@@ -4,142 +4,136 @@
 #include <stdlib.h>
 #include <string.h>
 
-//Prototipos de funciones.
-/* int remover_cache(struct cache*, char*);
-void insertar_ec_lista(struct cache*, struct entrada_cache*);     
-void mover_cabeza_lista(struct cache*, struct entrada_cache*);   
-void limpiar_lru(struct cache*);
-struct entrada_cache* remover_cola_lista(struct cache* cache);   
-struct cache* crear_cache(int, int);  */
+//Function prototype.
+int remove_cache(Cache*, char*);
+void insert_entry_list(Cache*, struct cache_entry*);     
+void move_entry_head(Cache*, struct cache_entry*);   
+struct cache_entry* remove_entry_list(Cache* cache);   
 
-//Asignar entrada de Cache.
-struct entrada_cache* asignar_entrada(char* ruta, char* tipo_contenido, void* contenido, unsigned long long tamano_contenido){
-    struct entrada_cache* entrada = (struct entrada_cache*)malloc(sizeof *entrada);
-    if(entrada == NULL){
+//Asign cache entry.
+struct cache_entry* asign_entry(char* path, char* content_type, void* content, unsigned long long content_size){
+    struct cache_entry* entry = (struct cache_entry*)malloc(sizeof(struct cache_entry));
+    if(entry == NULL){
         return NULL;
     }
     
-    entrada->ruta = malloc(strlen(ruta) + 1); //+1 => terminador de cadena \r.
-    //strcpy(entrada->ruta, ruta);    //strcpy puede llevar a un desbordamiento y puedes ser hackeado..., mejor usar strncpy!.
+    entry->path = malloc(strlen(path) + 1); //+1 => terminador de cadena \r.
+    //strcpy(entry->path, path);    //strcpy puede llevar a un desbordamiento y puedes ser hackeado..., mejor usar strncpy!.
     //Porque? -> https://www.youtube.com/watch?v=7mKfWrNQcj0
-    //strcpy(entrada->ruta, ruta);
-    strncpy(entrada->ruta, ruta, strlen(ruta)+1);
-    entrada->tipo_contenido = malloc(strlen(tipo_contenido)+1);
-    strncpy(entrada->tipo_contenido, tipo_contenido, strlen(tipo_contenido)+1);
-    //strcpy(entrada->tipo_contenido, tipo_contenido);
-    entrada->contenido = malloc(tamano_contenido);
-    memcpy(entrada->contenido, contenido, tamano_contenido);
+    //strcpy(entry->path, path);
+    strncpy(entry->path, path, strlen(path)+1);
+    entry->content_type = (char*)malloc(strlen(content_type)+1);
+    strncpy(entry->content_type, content_type, strlen(content_type)+1);
+    entry->content = malloc(content_size);
+    memcpy(entry->content, content, content_size);
 
-    entrada->ruta = strdup(ruta);
-    entrada->tipo_contenido = strdup(tipo_contenido);
-    entrada->tamano_contenido = tamano_contenido;
-    entrada->contenido = malloc(tamano_contenido);
-    memcpy(entrada->contenido, contenido, tamano_contenido);
-    entrada->ant = entrada->sig = NULL;
-    return entrada;
+    entry->path = strdup(path);
+    entry->content_type = strdup(content_type);
+    entry->content_len = content_size;
+    //entry->content = malloc(tamano_contenido);
+    //memcpy(entry->contenido, contenido, tamano_contenido);
+    entry->previous = entry->next = NULL;
+    return entry;
 }
 
 //Liberar memoria ocupada por la entradad de cache.
-void liberar_entrada(struct entrada_cache* entrada){
-    free(entrada->ruta);
-    free(entrada->contenido);
-    free(entrada->tipo_contenido);
-    free(entrada);
+void free_entry(struct cache_entry* entry){
+    free(entry->path);
+    free(entry->content);
+    free(entry->content_type);
+    free(entry);
 }
 
-//Insertar una entrada de cache (ec) a la cabeza de la lista enlazada.
-void insertar_ec_lista(struct cache* cache, struct entrada_cache* ec){
-    if(cache->cabeza == NULL){
-        cache->cabeza = cache->cola = ec;
-        ec->ant = ec->sig = NULL;
+//Insertar una entry de cache (entry) a la head de la lista enlazada.
+void insert_entry_list(Cache* cache, struct cache_entry* entry){
+    if(cache->head == NULL){
+        cache->head = cache->tail = entry;
+        entry->previous = entry->next = NULL;
     } else {
-        cache->cabeza->ant = ec;
-        ec->sig = cache->cabeza;
-        ec->ant = NULL;
-        cache->cabeza = ec;
+        cache->head->previous = entry;
+        entry->next = cache->head;
+        entry->previous = NULL;
+        cache->head = entry;
     }
 }
 
-//Mover una entrada de cache (ec) al principio de la lista.
-void mover_cabeza_lista(struct cache* cache, struct entrada_cache* ec){
-    if(ec != cache->cabeza){
-        if(ec == cache->cola){ //Si la entrada es la cola.
-            cache->cola = ec->ant;
-            cache->cola->sig = NULL;
-        } else {    //No estamos en la cabeza ni en la cola.
-            ec->ant->sig = ec->sig;
-            ec->sig->ant = ec->ant;
+//Mover una entry de cache (entry) al principio de la lista.
+void move_entry_head(Cache* cache, struct cache_entry* entry){
+    if(entry != cache->head){
+        if(entry == cache->tail){ //Si la entry es la tail.
+            cache->tail = entry->previous;
+            cache->tail->next = NULL;
+        } else {    //No estamos en la head ni en la tail.
+            entry->previous->next = entry->next;
+            entry->next->previous = entry->previous;
         }
-        ec->sig = cache->cabeza;
-        cache->cabeza->ant = ec;
-        ec->ant = NULL;
-        cache->cabeza = ec;
+        entry->next = cache->head;
+        cache->head->previous = entry;
+        entry->previous = NULL;
+        cache->head = entry;
     }
 }
 
-//Remover objeto de la cola y regresarlo.
-struct entrada_cache* remover_cola_lista(struct cache* cache){
-    struct entrada_cache* cola_prev = cache->cola; //Cola antigua.
-    cache->cola = cola_prev->ant;
-    cache->cola->sig = NULL;
-    cache->tamano_actual--; //Se decrementa el tamano_actual del cache.
+//Remover objeto de la tail y regresarlo.
+struct cache_entry* remove_entry_tail(Cache* cache){
+    struct cache_entry* cola_prev = cache->tail; //Cola antigua.
+    cache->tail = cola_prev->previous;
+    cache->tail->next = NULL;
+    cache->len--; //Se decrementa el len del cache.
     return cola_prev;
 }
 
-//Crear nueva cache... tamano_maximo = numero de entradas en la cache, tamano_hash (0 predeterminado).
-struct cache* crear_cache(int tamano_maximo, int tamano_hash){
-    struct cache* cache = (struct cache*)malloc(sizeof *cache);
+//Crear nueva cache... max_len = numero de entradas en la cache, tamano_hash (0 predeterminado).
+Cache* create_cache(int max_len, int tamano_hash){
+    Cache* cache = (Cache*)malloc(sizeof(Cache));
     if(cache == NULL){
         return NULL;
     }
-    cache->indice = createHash(tamano_hash, NULL);  //NULL -> funcion hash predeterminada.
-    cache->cabeza = cache->cola = NULL;
-    cache->tamano_maximo = tamano_maximo;
-    cache->tamano_actual = 0;
+    cache->index = create_hash(tamano_hash, NULL);  //NULL -> funcion hash predeterminada.
+    cache->head = cache->tail = NULL;
+    cache->max_len = max_len;
+    cache->len = 0;
     return cache;
 }
 
-//Liberar memoira de la cache.
-void liberar_cache(struct cache* cache){
-    struct entrada_cache* entrada_actual = cache->cabeza;
-    destroyHash(cache->indice);
-    while(entrada_actual != NULL){
-        struct entrada_cache* sig_entrada = entrada_actual->sig;
-        liberar_entrada(entrada_actual);
-        entrada_actual = sig_entrada;
+//Liberar memoria de la cache.
+void free_cache(Cache* cache){
+    struct cache_entry* current_entry = cache->head;
+    destroy_hash(cache->index);
+    while(current_entry != NULL){
+        struct cache_entry* sig_entrada = current_entry->next;
+        free_entry(current_entry);
+        current_entry = sig_entrada;
     }
     free(cache);
 }
 
 //Almacenar un elemento en la cache... tambien removera el item ultimamente utilizado.
-void put_cache(struct cache* cache, char* ruta, char* tipo_contenido, void* contenido, unsigned long long tamano_contenido){
-    //printf("\nPut cache: %s\n", ruta);
-    struct entrada_cache* ec = asignar_entrada(ruta, tipo_contenido, contenido, tamano_contenido);
-    insertar_ec_lista(cache, ec);
-    putHash(cache->indice, ruta, ec);
-    cache->tamano_actual++;
-    if(cache->tamano_actual > cache->tamano_maximo){
-        struct entrada_cache* cola_antigua = remover_cola_lista(cache);
-        deleteHash(cache->indice, cola_antigua->ruta);
-        liberar_entrada(cola_antigua);
-        printf("Tamano actual: %d, Deberia de ser: %d\n", cache->tamano_actual, cache->tamano_maximo - 1);
+void put_cache(Cache* cache, char* path, char* tipo_contenido, void* contenido, unsigned long long tamano_contenido){
+    struct cache_entry* entry = asign_entry(path, tipo_contenido, contenido, tamano_contenido);
+    insert_entry_list(cache, entry);
+    put_hash(cache->index, path, entry);
+    cache->len++;
+    if(cache->len > cache->max_len){
+        struct cache_entry* cola_antigua = remove_entry_tail(cache);
+        delete_hash(cache->index, cola_antigua->path);
+        free_entry(cola_antigua);
+        printf("Tamano actual: %d, Deberia de ser: %d\n", cache->len, cache->max_len - 1);
     }
 }
 
-//Obtener una entrada de la cache.
-struct entrada_cache* get_cache(struct cache* cache, char* ruta){
-    //printf("\nGet cache: %s.\n", ruta);
-    //printf("\n%s", ruta);
-    struct entrada_cache* ec = getHash(cache->indice, ruta);
-    if(ec == NULL){
+//Obtener una entry de la cache.
+struct cache_entry* get_cache(Cache* cache, char* path){
+    struct cache_entry* entry = get_hash(cache->index, path);
+    if(entry == NULL){
         return NULL;
     }
-    mover_cabeza_lista(cache, ec);
-    return ec;
+    move_entry_head(cache, entry);
+    return entry;
 }
 
-int remover_cache(struct cache* cache, char* ruta){
+int remove_cache(Cache* cache, char* path){
     (void)cache;
-    (void)ruta;
+    (void)path;
     return 0;
 }

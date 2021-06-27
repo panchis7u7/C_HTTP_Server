@@ -192,7 +192,7 @@ void obtener_archivo(int fd, struct args* args){
     char ruta_abs[4096];
     char* tipo_mime; 
     file_data* datos_archivo;
-    struct entrada_cache* cacheent;
+    struct cache_entry* cacheent;
     //Obtener Ruta.
     snprintf(ruta_abs, sizeof ruta_abs, "%s%s", ROOT_SERVIDOR, args->request_info->request);
     //Checar si archivo esta en cache.
@@ -205,7 +205,7 @@ void obtener_archivo(int fd, struct args* args){
                 args->request_info->request_type, 
                 args->request_info->request,KYEL);
 
-        sendResponse(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido, "");
+        sendResponse(fd, "HTTP/1.1 200 OK", cacheent->content_type, cacheent->content, cacheent->content_len, "");
         return;
     } else {
 
@@ -360,7 +360,7 @@ void obtener_archivo(int fd, struct args* args){
      sigaction(SIGINT, &sa,NULL);
      sigaction(SIGSEGV, &sa, NULL);
 
-    struct cache* cache = crear_cache(20, 0);
+    Cache* cache = create_cache(20, 0);
 
      MYSQL* conn;
 
