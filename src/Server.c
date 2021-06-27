@@ -46,26 +46,13 @@ void get_fecha(int);
 void post_guardado(int, char*);
 void obtener_archivo(int, struct args*);
 void handleHttpRequest(int fd, struct args*);
-void mprintf(const char* format, ...);
 void* threadFunc();
 
 int listenfd = 0;
 char* CORS = "Access-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE\r\n";
 pthread_t threadPool[THREADPOOL_SIZE];
-static pthread_mutex_t printf_mutex;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t conditioVariable = PTHREAD_COND_INITIALIZER;
-
-void mprintf(const char* format, ...){
-    va_list args;
-    va_start(args, format);
-
-    pthread_mutex_lock(&printf_mutex);
-    vprintf(format, args);
-    pthread_mutex_unlock(&printf_mutex);
-
-    va_end(args);
-}
 
 char* cleanHttp(char* str){
     char* index;
@@ -217,7 +204,7 @@ void obtener_archivo(int fd, struct args* args){
                 args->request_info->protocol,
                 args->request_info->request_type, 
                 args->request_info->request,KYEL);
-                
+
         sendResponse(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido, "");
         return;
     } else {
@@ -317,9 +304,15 @@ void obtener_archivo(int fd, struct args* args){
      //printf("%sRequest: %s %s %s", KWHT, tipo_solicitud, ruta_solicitud, protocolo_solicitud);  
     
     if(strcmp(tipo_solicitud, "GET") == 0){
-        if(strcmp(obtener_tipo_mime(ruta_solicitud), "application/octet-stream") == 0)
+        if(strcmp(obtener_tipo_mime(ruta_solicitud), "application/octet-stream") == 0) {
+            printf("%s\nStratus WebServer: Got connection from %s.\n%sRequest: %s %s %s => %sAPI.\n", 
+                KMAG, args->request_info->ip_addr, KWHT, 
+                args->request_info->protocol,
+                args->request_info->request_type, 
+                args->request_info->request, KYEL);
+
             handleGetApi(fd, ruta_solicitud, args, sendResponse);
-        else
+        } else
             obtener_archivo(fd, args);
     } else if(strcmp(tipo_solicitud, "OPTIONS") == 0){
         sendResponse(fd, "HTTP/1.1 200 OK", "application/json", "", 0, CORS);
@@ -387,9 +380,7 @@ void obtener_archivo(int fd, struct args* args){
      args->conn = conn;
      args->request_info = (request_info*)malloc(sizeof(request_info));
 
-     printf("%sStratus WebServer: Waiting for new conections on port %s...\n", KBLU, PUERTO);
-
-     pthread_mutex_init(&printf_mutex, NULL);
+     printf("%sStratus WebServer: Waiting for new connections on port %s...\n", KBLU, PUERTO);
 
      for(i = 0; i < THREADPOOL_SIZE; ++i){
          if(pthread_create(&threadPool[i], NULL, threadFunc, args) != 0){

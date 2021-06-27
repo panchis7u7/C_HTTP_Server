@@ -18,6 +18,6 @@ MYSQL* mysql_connect(MYSQL_CONN* connection){
         exit(1);
     }
 
-    printf("\x1B[32mSuccessful conection with MySql!\n");
+    printf("\x1B[32mSuccessfully connected with MySQL!\n");
     return conn;
 }
