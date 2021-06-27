@@ -1,5 +1,6 @@
 #include "Queue.h"
 #include <stdlib.h>
+#include <unistd.h>
 
 NodeQueue* head = NULL;
 NodeQueue* tail = NULL;

@@ -1,12 +1,13 @@
 #include "Api.h"
+#include "Utils.h"
 #include <string.h>
 #include <stdio.h>
 
 void get(int fd, char* query, MYSQL* conn, int(*f)(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido, char* flags));
 
-void handleGetApi(int fd, char* api,  MYSQL* conn, int(*f)(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido, char* flags)) {
+void handleGetApi(int fd, char* api, struct args* args, int(*f)(int fd, char* cabeza, char* tipo_contenido, void* cuerpo, unsigned long long tamano_contenido, char* flags)) {
     if(strcmp(api, "/alumnos") == 0) {
-        get(fd, "SELECT * FROM Alumnos;", conn, (*f));
+        get(fd, "SELECT * FROM Alumnos;", args->conn, (*f));
     }
 }
 

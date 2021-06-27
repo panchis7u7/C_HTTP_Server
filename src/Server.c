@@ -5,6 +5,7 @@
 #include "Mysql.h"
 #include "Api.h"
 #include "Queue.h"
+#include "Utils.h"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -21,6 +22,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <stdarg.h>
 
 #define PUERTO "3490"
 #define ARCHIVOS_SERVIDOR "../serverfiles"
@@ -36,26 +38,34 @@
 #define KCYN  "\x1B[36m"
 #define KWHT  "\x1B[37m"
 
-struct args {
-    struct cache* cache;
-    MYSQL* conn;
-};
-
 //Prototipo de funciones.
 int sendResponse(int, char*, char*, void*, unsigned long long, char*);
 void resp_404(int);
 void get_d20(int);
 void get_fecha(int);
 void post_guardado(int, char*);
-void obtener_archivo(int, struct cache*, char*);
-void handleHttpRequest(int fd, struct cache* cache, MYSQL* conn);
+void obtener_archivo(int, struct args*);
+void handleHttpRequest(int fd, struct args*);
+void mprintf(const char* format, ...);
 void* threadFunc();
 
 int listenfd = 0;
 char* CORS = "Access-Control-Allow-Headers: *\r\nAccess-Control-Allow-Methods: GET, POST, OPTIONS, PUT, PATCH, DELETE\r\n";
 pthread_t threadPool[THREADPOOL_SIZE];
+static pthread_mutex_t printf_mutex;
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t conditioVariable = PTHREAD_COND_INITIALIZER;
+
+void mprintf(const char* format, ...){
+    va_list args;
+    va_start(args, format);
+
+    pthread_mutex_lock(&printf_mutex);
+    vprintf(format, args);
+    pthread_mutex_unlock(&printf_mutex);
+
+    va_end(args);
+}
 
 char* cleanHttp(char* str){
     char* index;
@@ -191,36 +201,49 @@ void get_d20(int fd){
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
+void obtener_archivo(int fd, struct args* args){
     char ruta_abs[4096];
     char* tipo_mime; 
     file_data* datos_archivo;
     struct entrada_cache* cacheent;
     //Obtener Ruta.
-    snprintf(ruta_abs, sizeof ruta_abs, "%s%s", ROOT_SERVIDOR, ruta_archivo);
+    snprintf(ruta_abs, sizeof ruta_abs, "%s%s", ROOT_SERVIDOR, args->request_info->request);
     //Checar si archivo esta en cache.
-    cacheent = get_cache(cache, ruta_abs);
+    cacheent = get_cache(args->cache, ruta_abs);
     if(cacheent){
-        printf(" %s=> Cache.", KBLU);
+
+        printf("%s\nStratus WebServer: Got connection from %s.\n%sRequest: %s %s %s => %sCache.\n", 
+                KMAG, args->request_info->ip_addr, KWHT, 
+                args->request_info->protocol,
+                args->request_info->request_type, 
+                args->request_info->request,KYEL);
+                
         sendResponse(fd, "HTTP/1.1 200 OK", cacheent->tipo_contenido, cacheent->contenido, cacheent->tamano_contenido, "");
         return;
     } else {
+
+        printf("%s\nStratus WebServer: Got connection from %s.\n%sRequest: %s %s %s => %sFile.\n", 
+                KMAG, args->request_info->ip_addr, KWHT, 
+                args->request_info->protocol,
+                args->request_info->request_type, 
+                args->request_info->request, KBLU);
+
         datos_archivo = cargar_archivo(ruta_abs);
         if (datos_archivo == NULL){
             if(strcmp(ruta_abs, "./serverroot/") == 0){
                 // Guachar
-                obtener_archivo(fd, cache, "/index.html");
+                args->request_info->request = "/index.html";
+                obtener_archivo(fd, args);
                 return;
             } else {
                 resp_404(fd);
                 return;
             }
         }
-        printf(" %s=> Archivo.", KYEL);
         tipo_mime = obtener_tipo_mime(ruta_abs);
         sendResponse(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano, "");
         //printf("\nruta-abs: %s\n", ruta_abs);
-        put_cache(cache, ruta_abs, tipo_mime, datos_archivo->data, datos_archivo->tamano);
+        put_cache(args->cache, ruta_abs, tipo_mime, datos_archivo->data, datos_archivo->tamano);
         liberar_archivo(datos_archivo);
     }
 }
@@ -256,8 +279,9 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
          clientSocket = removeQueue();
          pthread_mutex_unlock(&mutex);
          if(clientSocket != NULL){
-            handleHttpRequest(*clientSocket, data->cache, data->conn);
+            handleHttpRequest(*clientSocket, data);
             close(*clientSocket);
+            free(clientSocket);
          }
      }
  }
@@ -267,7 +291,7 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  //Encargarse de la solicitud HTTP y mandar respuesta.
- void handleHttpRequest(int fd, struct cache* cache, MYSQL* conn){
+ void handleHttpRequest(int fd, struct args* args){
      const int tamano_buffer_solicitud = 65536;
      char solicitud[tamano_buffer_solicitud];
      char tipo_solicitud[8]; //Get o Post.
@@ -284,17 +308,19 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      //Poner un terminador de cadena al final de la solicitud.
      solicitud[bytes_rcvd] = '\0';
 
-     //printf("\nPaquete: %s\n", solicitud);
-
      //Obtener el tipo de solicitud y la ruta .
      sscanf(solicitud, "%s %s %s", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
-     printf("%sSolicitud: %s %s %s", KWHT, tipo_solicitud, ruta_solicitud, protocolo_solicitud);  
+
+     args->request_info->request = cleanHttp(ruta_solicitud);
+     args->request_info->request_type = tipo_solicitud;
+     args->request_info->protocol = protocolo_solicitud;
+     //printf("%sRequest: %s %s %s", KWHT, tipo_solicitud, ruta_solicitud, protocolo_solicitud);  
     
     if(strcmp(tipo_solicitud, "GET") == 0){
         if(strcmp(obtener_tipo_mime(ruta_solicitud), "application/octet-stream") == 0)
-            handleGetApi(fd, ruta_solicitud, conn, sendResponse);
+            handleGetApi(fd, ruta_solicitud, args, sendResponse);
         else
-            obtener_archivo(fd, cache, cleanHttp(ruta_solicitud));
+            obtener_archivo(fd, args);
     } else if(strcmp(tipo_solicitud, "OPTIONS") == 0){
         sendResponse(fd, "HTTP/1.1 200 OK", "application/json", "", 0, CORS);
     }
@@ -359,16 +385,17 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
      struct args* args = (struct args*)malloc(sizeof(struct args));
      args->cache = cache;
      args->conn = conn;
+     args->request_info = (request_info*)malloc(sizeof(request_info));
 
      printf("%sStratus WebServer: Waiting for new conections on port %s...\n", KBLU, PUERTO);
+
+     pthread_mutex_init(&printf_mutex, NULL);
 
      for(i = 0; i < THREADPOOL_SIZE; ++i){
          if(pthread_create(&threadPool[i], NULL, threadFunc, args) != 0){
              perror("Failed to create thread\n");
          }
      }
-
-     //Bucle principal que acepta conecciones entrantes.
 
      while(1) {
         socklen_t tamano_sin = sizeof info_addr;
@@ -381,7 +408,8 @@ void obtener_archivo(int fd, struct cache* cache, char* ruta_archivo){
 
         //Imprime un mensaje de que obtuvimos una coneccion.
         inet_ntop(info_addr.ss_family, get_in_addr((struct sockaddr*)&info_addr), s, sizeof s);
-        printf("%s\nStratus WebServer: Got connection from %s.\n", KMAG , s);
+        args->request_info->ip_addr = s;
+        //printf("%s\nStratus WebServer: Got connection from %s.\n", KMAG , s);
 
         int* clientSocket = (int*)malloc(sizeof(int));
         *clientSocket = newfd;
