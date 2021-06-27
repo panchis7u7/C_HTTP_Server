@@ -2,6 +2,7 @@
 #define _UTILS_H_
 
 #include <mysql/mysql.h>
+#include "../headers/Cache.h"
 
 typedef struct request_info {
     char* ip_addr;
