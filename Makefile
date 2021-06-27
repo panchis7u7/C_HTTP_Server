@@ -4,7 +4,6 @@ PROG=Stratus
 MYSQLCFLAGS= `mysql_config --cflags`
 MYSQLLIBS= `mysql_config --libs`
 INCLUDES= /usr/include/mysql/mysql.h
-HEADERS=headers
 SRC=src
 OBJ=obj
 BIN=bin
