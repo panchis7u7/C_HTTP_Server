@@ -1,3 +1,4 @@
+
 CC=gcc
 CFLAGS=-Wall -Wextra -Werror
 MYSQLCFLAGS= `mysql_config --cflags`
@@ -33,7 +34,3 @@ Api.o: Api.c Api.h
 
 clean:
 	rm -f $(OBJS)
-	#rm -f Server
-	#rm -f cache_tests/cache_tests
-	#rm -f cache_tests/cache_tests.exe
-	#rm -f cache_tests/cache_tests.log

@@ -1,4 +1,4 @@
-#include "Mime.h"
+#include "../headers/Mime.h"
 #include <ctype.h>
 #include <string.h>
 

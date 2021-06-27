@@ -1,4 +1,4 @@
-#include "File.h"
+#include "../headers/File.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>   //Nos permite obtener informacion sobre atributos de archivos.

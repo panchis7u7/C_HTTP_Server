@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "LinkedList.h"
+#include "../headers/LinkedList.h"
 
 //Crea una nueva lista.
 List* createList(void){

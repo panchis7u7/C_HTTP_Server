@@ -1,4 +1,4 @@
-#include "Mysql.h"
+#include "../headers/Mysql.h"
 #include <stdio.h>
 
 MYSQL* mysql_connect(MYSQL_CONN* connection){

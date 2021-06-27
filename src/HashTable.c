@@ -1,5 +1,5 @@
-#include "HashTable.h"
-#include "LinkedList.h"
+#include "../headers/HashTable.h"
+#include "../headers/LinkedList.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

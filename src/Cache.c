@@ -1,5 +1,5 @@
-#include "Cache.h"
-#include "HashTable.h"
+#include "../headers/Cache.h"
+#include "../headers/HashTable.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

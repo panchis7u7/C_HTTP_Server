@@ -1,7 +1,7 @@
 #ifndef _CACHE_H_
 #define _CACHE_H_
 
-#include "HashTable.h"
+#include "../headers/HashTable.h"
 
 //Entrada individual a cache.
 struct entrada_cache {

@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include "Net.h"
+#include "../headers/Net.h"
 
 #define BACKLOG 10  //Numero de conecciones pendientes que la cola almacenara.
 

@@ -1,6 +1,5 @@
 {
     "files.associations": {
-        "*.rmd": "markdown",
-        "mysql.h": "c"
+        "types.h": "c"
     }
 }

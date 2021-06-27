@@ -1,11 +1,11 @@
-#include "Cache.h"
-#include "File.h"
-#include "Mime.h"
-#include "Net.h"
-#include "Mysql.h"
-#include "Api.h"
-#include "Queue.h"
-#include "Utils.h"
+#include "../headers/Cache.h"
+#include "../headers/File.h"
+#include "../headers/Mime.h"
+#include "../headers/Net.h"
+#include "../headers/Mysql.h"
+#include "../headers/Api.h"
+#include "../headers/Queue.h"
+#include "../headers/Utils.h"
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -25,8 +25,8 @@
 #include <stdarg.h>
 
 #define PUERTO "3490"
-#define ARCHIVOS_SERVIDOR "../serverfiles"
-#define ROOT_SERVIDOR "../serverroot"
+#define ARCHIVOS_SERVIDOR "./serverfiles"
+#define ROOT_SERVIDOR "./serverroot"
 #define THREADPOOL_SIZE 20
 
 #define KNRM  "\x1B[0m"
