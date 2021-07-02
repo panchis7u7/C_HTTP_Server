@@ -32,7 +32,7 @@ void* get_in_addr(struct sockaddr* sa){
 }
 
 //Regresar el socket oyente (listening) principal.
-int getListeningSocket(char* puerto){
+int get_listening_socket(char* puerto){
     int sockfd; 
     struct addrinfo hints, *servinfo, *p;
     int true = 1;

@@ -2,9 +2,9 @@
 #define _HASHTABLE_H_
 
 typedef struct HashTable {
-    int size;             //Solo lectura.
-    int entryCount;    //Solo lectura.
-    float payLoad;            //Solo lectura. ->Numero de llaves almacenadas en la tabla, dividida por la capacidad.
+    int size;           //ReadOnly.
+    int entryCount;     //ReadOnly.
+    float payLoad;      //ReadOnly. -> Numero de llaves almacenadas en la tabla, dividida por la capacidad.
     struct List** bucket; 
     unsigned long long (*hashfn)(void* data, unsigned long long dataSize, int bucketcount);
 } HashTable;

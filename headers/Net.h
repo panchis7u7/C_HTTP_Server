@@ -2,7 +2,7 @@
 #define _NET_C_
 
 struct sockaddr;
-void* get_in_addr(struct sockaddr* sa);
-int getListeningSocket(char* puerto);
+extern void* get_in_addr(struct sockaddr* sa);
+extern int get_listening_socket(char* puerto);
 
 #endif //!_NET_C_

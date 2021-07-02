@@ -39,13 +39,13 @@
 #define KWHT  "\x1B[37m"
 
 //Prototipo de funciones.
-int sendResponse(int, char*, char*, void*, unsigned long long, char*);
+int send_response(int, char*, char*, void*, unsigned long long, char*);
 void resp_404(int);
 void get_d20(int);
 void get_fecha(int);
 void post_guardado(int, char*);
 void obtener_archivo(int, struct args*);
-void handleHttpRequest(int fd, struct args*);
+void handle_http_request(int fd, struct args*);
 void* threadFunc();
 
 int listenfd = 0;
@@ -54,7 +54,7 @@ pthread_t threadPool[THREADPOOL_SIZE];
 pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 pthread_cond_t conditioVariable = PTHREAD_COND_INITIALIZER;
 
-char* cleanHttp(char* str){
+char* clean_http(char* str){
     char* index;
     if((index = strstr(str, "%20")) != NULL){
         index[0] = ' ';
@@ -77,7 +77,7 @@ char* cleanHttp(char* str){
  * Return the value from the send() function.
  */
 
-int sendResponse(int fd, char* cabeza, char* contentType, void* body, unsigned long long contentLen, char* flags){
+int send_response(int fd, char* cabeza, char* contentType, void* body, unsigned long long contentLen, char* flags){
     const int maxResponseLen = 65536 + contentLen;
     //const int tamano_respuesta_maxima = 262144;
     char* response = (char*)malloc(maxResponseLen*sizeof(char));
@@ -131,7 +131,7 @@ void resp_404(int fd){
     }
 
     tipo_mime = obtener_tipo_mime(ruta_archivo);
-    sendResponse(fd, "HTTP/1.1 404 NOT FOUND", tipo_mime, datos_archivo->data, datos_archivo->tamano, "");
+    send_response(fd, "HTTP/1.1 404 NOT FOUND", tipo_mime, datos_archivo->data, datos_archivo->tamano, "");
     liberar_archivo(datos_archivo);
 }
 
@@ -145,7 +145,7 @@ void get_d20(int fd){
         char str[8];
         int random = (rand() % (20 -1 + 1) + 1);
         int tamano = sprintf(str, "%d", random);
-        sendResponse(fd, "HTTP/1.1 200 OK", "text/plain", str, tamano, "");
+        send_response(fd, "HTTP/1.1 200 OK", "text/plain", str, tamano, "");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,7 +158,7 @@ void get_d20(int fd){
     char current[26]; // gmtime documentation stated that a user-supplied buffer.
                       // should have at least 26 bytes.
     int length = sprintf(current, "%s", asctime(gmtime(&gmt_format)));
-    sendResponse(fd, "HTTP/1.1 200 OK", "text/plain", current, length, "");
+    send_response(fd, "HTTP/1.1 200 OK", "text/plain", current, length, "");
  }
 
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -180,7 +180,7 @@ void get_d20(int fd){
 
      char cuerpo_respuesta[128];
      int tamano = sprintf(cuerpo_respuesta, "{\"status\": \"%s\"}\n", status);
-     sendResponse(fd, "HTTP/1.1 200 OK", "application/json", cuerpo_respuesta, tamano, "");
+     send_response(fd, "HTTP/1.1 200 OK", "application/json", cuerpo_respuesta, tamano, "");
     //Guardar el cuerpo y enviar respuesta.
  }
 
@@ -205,7 +205,7 @@ void obtener_archivo(int fd, struct args* args){
                 args->request_info->request_type, 
                 args->request_info->request,KYEL);
 
-        sendResponse(fd, "HTTP/1.1 200 OK", cacheent->content_type, cacheent->content, cacheent->content_len, "");
+        send_response(fd, "HTTP/1.1 200 OK", cacheent->content_type, cacheent->content, cacheent->content_len, "");
         return;
     } else {
 
@@ -228,7 +228,7 @@ void obtener_archivo(int fd, struct args* args){
             }
         }
         tipo_mime = obtener_tipo_mime(ruta_abs);
-        sendResponse(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano, "");
+        send_response(fd, "HTTP/1.1 200 OK", tipo_mime, datos_archivo->data, datos_archivo->tamano, "");
         //printf("\nruta-abs: %s\n", ruta_abs);
         put_cache(args->cache, ruta_abs, tipo_mime, datos_archivo->data, datos_archivo->tamano);
         liberar_archivo(datos_archivo);
@@ -266,7 +266,7 @@ void obtener_archivo(int fd, struct args* args){
          clientSocket = removeQueue();
          pthread_mutex_unlock(&mutex);
          if(clientSocket != NULL){
-            handleHttpRequest(*clientSocket, data);
+            handle_http_request(*clientSocket, data);
             close(*clientSocket);
             free(clientSocket);
          }
@@ -278,7 +278,7 @@ void obtener_archivo(int fd, struct args* args){
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  //Encargarse de la solicitud HTTP y mandar respuesta.
- void handleHttpRequest(int fd, struct args* args){
+ void handle_http_request(int fd, struct args* args){
      const int tamano_buffer_solicitud = 65536;
      char solicitud[tamano_buffer_solicitud];
      char tipo_solicitud[8]; //Get o Post.
@@ -298,7 +298,7 @@ void obtener_archivo(int fd, struct args* args){
      //Obtener el tipo de solicitud y la ruta .
      sscanf(solicitud, "%s %s %s", tipo_solicitud, ruta_solicitud, protocolo_solicitud);
 
-     args->request_info->request = cleanHttp(ruta_solicitud);
+     args->request_info->request = clean_http(ruta_solicitud);
      args->request_info->request_type = tipo_solicitud;
      args->request_info->protocol = protocolo_solicitud;
      //printf("%sRequest: %s %s %s", KWHT, tipo_solicitud, ruta_solicitud, protocolo_solicitud);  
@@ -311,11 +311,11 @@ void obtener_archivo(int fd, struct args* args){
                 args->request_info->request_type, 
                 args->request_info->request, KYEL);
 
-            handleGetApi(fd, ruta_solicitud, args, sendResponse);
+            handleGetApi(fd, ruta_solicitud, args, send_response);
         } else
             obtener_archivo(fd, args);
     } else if(strcmp(tipo_solicitud, "OPTIONS") == 0){
-        sendResponse(fd, "HTTP/1.1 200 OK", "application/json", "", 0, CORS);
+        send_response(fd, "HTTP/1.1 200 OK", "application/json", "", 0, CORS);
     }
     return;
  }
@@ -325,7 +325,7 @@ void obtener_archivo(int fd, struct args* args){
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  //Gracefully quit the program.
- void signalHandler(){
+ void signal_handler(){
      write(STDOUT_FILENO, "\n\x1B[31mQuitting...\n\x1B[37m", 23);
      close(listenfd);
      exit(0);
@@ -336,13 +336,13 @@ void obtener_archivo(int fd, struct args* args){
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
  int main(void){
-     int newfd; //Escucha en sock_fd, nueva coneccion en newfd.
+     int newfd; //New connction FD.
      struct sockaddr_storage info_addr;
      char s[INET6_ADDRSTRLEN];
      int i;
 
-     //Obtener un socket oyente.
-     listenfd = getListeningSocket(PUERTO);
+     //Get listening socket on default port.
+     listenfd = get_listening_socket(PUERTO);
 
      if (listenfd < 0) {
          fprintf(stderr, "\n%sStratus WebServer: Fatal error at opening listening socket.\n", KRED);
@@ -354,7 +354,7 @@ void obtener_archivo(int fd, struct args* args){
      printf("%s-----------------------------------------------------------\n\n", KGRN);
 
      struct sigaction sa;
-     sa.sa_handler = signalHandler;
+     sa.sa_handler = signal_handler;
 
      //handle ^C quitting and Seg faults.
      sigaction(SIGINT, &sa,NULL);
