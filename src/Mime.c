@@ -59,11 +59,14 @@ char *obtener_tipo_mime(char *filename) {
   if (strcmp(ext, "json") == 0) {
     return "application/json";
   }
-  if (strcmp(ext, "txt") == 0) {
+  if (strcmp(ext, "txt") == 0 || strcmp(ext, "TXT") == 0) {
     return "text/plan";
   }
   if (strcmp(ext, "gif") == 0) {
     return "image/gif";
+  }
+  if (strcmp(ext, "ico") == 0) {
+    return "image/x-icon";
   }
   if (strcmp(ext, "png") == 0) {
     return "image/png";

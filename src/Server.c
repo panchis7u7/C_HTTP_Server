@@ -360,7 +360,7 @@ void obtener_archivo(int fd, struct args* args){
      sigaction(SIGINT, &sa,NULL);
      sigaction(SIGSEGV, &sa, NULL);
 
-    Cache* cache = create_cache(20, 0);
+     Cache* cache = create_cache(20, 0);
 
      MYSQL* conn;
 
